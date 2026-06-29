@@ -55,19 +55,17 @@ private struct QuestionPageView: View {
                 ForEach(question.options) { option in
                     Button {
                         onSelect(option)
-                    } label: {
-                        Text(option.text)
+                    } label: {                        Text(option.text)
                             .font(.body)
                             .fontWeight(.medium)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(selectedOption == option ? Color.accentColor.opacity(0.2) : Color("W"))
+                            .frame(width: 350, height: 56)
+                            .background(selectedOption == option ? Color("P200") : Color("W"))
                             .foregroundColor(.primary)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(selectedOption == option ? Color.accentColor : .clear, lineWidth: 2)
+                                    .stroke(selectedOption == option ? Color("P400") : .clear, lineWidth: 2)
                             )
-                            .cornerRadius(12)
+                            .cornerRadius(28)
                     }
                 }
             }
@@ -84,9 +82,9 @@ private struct QuestionPageView: View {
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(selectedOption == nil ? Color.gray.opacity(0.3) : Color.accentColor)
+                        .background(selectedOption == nil ? Color("G200") : Color("P400"))
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(28)
                 }
                 .disabled(selectedOption == nil)
                 .padding(.horizontal)

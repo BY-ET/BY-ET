@@ -64,14 +64,21 @@ final class TestViewModel: ObservableObject {
 
     private func goToNextQuestion() {
         currentIndex += 1
-        currentQuestion = questions[currentIndex]
-        // 다음 질문에 이미 답한 기록이 있으면 선택 상태 복원 (뒤로가기 대응)
-        selectedOptionForCurrentQuestion = answers.first { $0.questionId == currentQuestion?.id }?.selectedOption
+        if currentIndex < questions.count {
+            currentQuestion = questions[currentIndex]
+        } else {
+            currentQuestion = nil
+            isFinished = true
+        }
         updateProgress()
     }
 
     private func updateProgress() {
-        progress = questions.isEmpty ? 0 : Double(currentIndex) / Double(questions.count)
+        guard !questions.isEmpty else {
+            progress = 0
+            return
+        }
+        progress = min(Double(currentIndex + 1) / Double(questions.count), 1.0)
     }
 
     func resultGroupedByCategory() -> [QuestionCategory: [UserAnswer]] {
