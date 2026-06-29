@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TestView: View {
     @StateObject private var viewModel = TestViewModel()
+    let onClose: () -> Void
 
     var body: some View {
         VStack {
@@ -10,6 +11,7 @@ struct TestView: View {
                     question: question,
                     progress: viewModel.progress,
                     isLastQuestion: viewModel.isLastQuestion,
+                    canGoBack: viewModel.canGoBack,
                     selectedOption: viewModel.selectedOptionForCurrentQuestion,
                     onSelect: { option in
                         withAnimation {
@@ -20,10 +22,15 @@ struct TestView: View {
                         withAnimation {
                             viewModel.showResult()
                         }
+                    },
+                    onBack: {
+                        withAnimation {
+                            viewModel.goToPreviousQuestion()
+                        }
                     }
                 )
             } else if viewModel.isFinished {
-                SurveyResultView(viewModel: viewModel)
+                TestResultsView(viewModel: viewModel, onClose: onClose)
             }
         }
         .background(Color("P050"))
@@ -35,34 +42,61 @@ private struct QuestionPageView: View {
     let question: Question
     let progress: Double
     let isLastQuestion: Bool
+    let canGoBack: Bool
     let selectedOption: QuestionOption?
     let onSelect: (QuestionOption) -> Void
     let onShowResult: () -> Void
+    let onBack: () -> Void
 
     var body: some View {
         VStack(spacing: 32) {
+            HStack {
+                if canGoBack {
+                    Button {
+                        onBack()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
+                }
+                Spacer()
+                Text("유형 탐색")
+                Spacer()
+            }
+            .frame(height: 24)
+            .padding(.horizontal)
+
             CustomProgressBar(progress: progress)
                 .padding(.horizontal)
+
             Spacer()
 
-            Text(question.title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            VStack(spacing: 8) {
+                Text("Q\(question.order).")
+                    .font(.system(size: 24, weight: .bold))
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color("P400"))
+                Text(question.title)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
 
             VStack(spacing: 16) {
                 ForEach(question.options) { option in
                     Button {
                         onSelect(option)
-                    } label: {                        Text(option.text)
+                    } label: {
+                        Text(option.text)
                             .font(.body)
                             .fontWeight(.medium)
                             .frame(width: 350, height: 56)
                             .background(selectedOption == option ? Color("P200") : Color("W"))
                             .foregroundColor(.primary)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: 28)
                                     .stroke(selectedOption == option ? Color("P400") : .clear, lineWidth: 2)
                             )
                             .cornerRadius(28)
@@ -95,55 +129,6 @@ private struct QuestionPageView: View {
     }
 }
 
-private struct SurveyResultView: View {
-    @ObservedObject var viewModel: TestViewModel
-
-    var body: some View {
-        let grouped = viewModel.resultGroupedByCategory()
-
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("설문이 끝났어요 🎉")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .padding(.top, 32)
-
-                ForEach(QuestionCategory.allCases, id: \.self) { category in
-                    if let categoryAnswers = grouped[category] {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(category.rawValue)
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-
-                            ForEach(categoryAnswers) { answer in
-                                Text("선택: \(answer.selectedOption.text)")
-                                    .font(.body)
-                            }
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
-                    }
-                }
-
-                Button {
-                    viewModel.restart()
-                } label: {
-                    Text("다시하기")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                }
-                .padding(.top, 8)
-            }
-            .padding(.horizontal)
-        }
-    }
-}
-
 #Preview {
-    TestView()
+    TestView(onClose: {})
 }

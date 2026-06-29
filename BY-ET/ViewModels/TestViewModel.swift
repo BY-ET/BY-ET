@@ -6,6 +6,8 @@ final class TestViewModel: ObservableObject {
     @Published private(set) var isFinished: Bool = false
     @Published private(set) var answers: [UserAnswer] = []
     @Published private(set) var selectedOptionForCurrentQuestion: QuestionOption?
+    @Published private(set) var catType: CatType?
+    @Published private(set) var categoryJudgements: [CategoryJudgement] = []
 
     private let questions: [Question]
     private var currentIndex: Int = 0
@@ -19,9 +21,9 @@ final class TestViewModel: ObservableObject {
     var isLastQuestion: Bool {
         currentIndex == questions.count - 1
     }
-
-    /// 선택지를 고름. 마지막 질문이 아니면 자동으로 다음 질문 이동.
-    /// 마지막 질문이면 선택 상태만 저장하고 이동은 showResult()가 처리.
+    var canGoBack: Bool {
+        currentIndex > 0
+    }
     func selectOption(_ option: QuestionOption) {
         guard let question = currentQuestion else { return }
 
@@ -36,13 +38,17 @@ final class TestViewModel: ObservableObject {
         }
     }
 
-    /// 결과보기 버튼을 눌렀을 때 호출 (마지막 질문에서만 사용)
     func showResult() {
-        guard isLastQuestion, selectedOptionForCurrentQuestion != nil else { return }
-        currentQuestion = nil
-        isFinished = true
-        updateProgress()
-    }
+            guard isLastQuestion, selectedOptionForCurrentQuestion != nil else { return }
+            let result = SurveyResultCalculator.calculate(from: answers)
+            catType = result.catType
+            categoryJudgements = result.judgements
+
+            currentQuestion = nil
+            isFinished = true
+            updateProgress()
+        }
+
 
     func goToPreviousQuestion() {
         guard currentIndex > 0 else { return }
@@ -53,19 +59,22 @@ final class TestViewModel: ObservableObject {
         updateProgress()
     }
 
-    func restart() {
-        currentIndex = 0
-        currentQuestion = questions.first
-        isFinished = false
-        answers = []
-        selectedOptionForCurrentQuestion = nil
-        updateProgress()
-    }
-
+        func restart() {
+                currentIndex = 0
+                currentQuestion = questions.first
+                isFinished = false
+                answers = []
+                selectedOptionForCurrentQuestion = nil
+                catType = nil
+                categoryJudgements = []
+                updateProgress()
+            }
+    
     private func goToNextQuestion() {
         currentIndex += 1
         if currentIndex < questions.count {
             currentQuestion = questions[currentIndex]
+            selectedOptionForCurrentQuestion = answers.first { $0.questionId == currentQuestion?.id }?.selectedOption
         } else {
             currentQuestion = nil
             isFinished = true
