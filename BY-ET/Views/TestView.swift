@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TestView: View {
     @StateObject private var viewModel = TestViewModel()
+    let onClose: () -> Void
 
     var body: some View {
         VStack {
@@ -29,7 +30,7 @@ struct TestView: View {
                     }
                 )
             } else if viewModel.isFinished {
-                SurveyResultView(viewModel: viewModel)
+                TestResultsView(viewModel: viewModel, onClose: onClose)
             }
         }
         .background(Color("P050"))
@@ -76,7 +77,6 @@ private struct QuestionPageView: View {
                     .font(.system(size: 24, weight: .bold))
                     .fontWeight(.semibold)
                     .foregroundColor(Color("P400"))
-                
                 Text(question.title)
                     .font(.title2)
                     .fontWeight(.bold)
@@ -129,61 +129,6 @@ private struct QuestionPageView: View {
     }
 }
 
-private struct SurveyResultView: View {
-    @ObservedObject var viewModel: TestViewModel
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                Text("당신의 유형은")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
-                    .padding(.top, 32)
-
-                Text(viewModel.catType?.rawValue ?? "")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(viewModel.categoryJudgements, id: \.category) { judgement in
-                        HStack {
-                            Text(judgement.category.rawValue)
-                                .font(.headline)
-                            Spacer()
-                            Text(judgement.isPositive ? "O" : "X")
-                                .font(.headline)
-                                .foregroundColor(judgement.isPositive ? .green : .red)
-                            Text("(\(judgement.score)/5)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                Button {
-                                    viewModel.restart()
-                                } label: {
-                                    Text("다시하기")
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 14)
-                                        .background(Color.accentColor)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(12)
-                                }
-                                .padding(.horizontal)
-
-            }
-        }
-    }
-}
-
 #Preview {
-    TestView()
+    TestView(onClose: {})
 }
