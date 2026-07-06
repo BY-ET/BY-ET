@@ -95,7 +95,7 @@ struct TestResultsView: View {
         .fullScreenCover(isPresented: $showGoalSetting) {
             GoalSettingView(onClose: {
                 showGoalSetting = false
-            })
+            }, catType: viewModel.catType ?? .type1, onStart: onClose)
         }
     }
 }

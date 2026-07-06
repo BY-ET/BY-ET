@@ -1,28 +1,23 @@
 import SwiftUI
 
 struct GoalSettingView: View {
+    @StateObject private var viewModel = GoalSettingViewModel()
     let onClose: () -> Void
+    var catType: CatType = .type1
+    var onStart: () -> Void = {}
 
-    @State private var step = 1
-    @State private var selectedHabit: String?
-    @State private var selectedPeriod: String?
-    @State private var meals: [MealTime] = MealTime.defaults
-    @State private var outings: [OutingTime] = OutingTime.defaults
     @State private var timeEditing: TimeEditing?
-
-    private let totalSteps = 4
-    private let habitOptions = ["물 자주 마시기", "과식하지 않기", "술 줄이기", "외식 / 배달음식 줄이기"]
-    private let periodOptions = ["2주 뒤", "4주 뒤 (한 달)", "6주 뒤"]
+    @State private var isSettingEnvironment = false
 
     var body: some View {
         VStack(spacing: 32) {
             // 헤더
             HStack {
                 Button {
-                    if step > 1 {
-                        withAnimation { step -= 1 }
-                    } else {
+                    if viewModel.isFirstStep {
                         onClose()
+                    } else {
+                        withAnimation { viewModel.goToPreviousStep() }
                     }
                 } label: {
                     Image(systemName: "chevron.left")
@@ -36,15 +31,15 @@ struct GoalSettingView: View {
             .frame(height: 24)
             .padding(.horizontal)
 
-            CustomProgressBar(progress: Double(step) / Double(totalSteps))
+            SegmentedProgressBar(totalSteps: viewModel.totalSteps, currentStep: viewModel.step)
                 .padding(.horizontal)
 
             // 설정 번호 + 질문
             VStack(spacing: 8) {
-                Text("설정\(step)")
+                Text("설정\(viewModel.step)")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(Color("P400"))
-                Text(questionTitle)
+                Text(viewModel.questionTitle)
                     .font(.title2)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
@@ -59,30 +54,30 @@ struct GoalSettingView: View {
 
             // 다음 버튼
             Button {
-                if step < totalSteps {
-                    withAnimation { step += 1 }
-                } else {
+                if viewModel.isLastStep {
                     // TODO: 목표 저장 로직 연결
-                    onClose()
+                    isSettingEnvironment = true
+                } else {
+                    withAnimation { viewModel.goToNextStep() }
                 }
             } label: {
-                Text("다음")
+                Text(viewModel.isLastStep ? "완료" : "다음")
                     .font(.body)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(isNextEnabled ? Color("P400") : Color("G200"))
+                    .background(viewModel.isNextEnabled ? Color("P400") : Color("G200"))
                     .foregroundColor(.white)
                     .cornerRadius(28)
             }
-            .disabled(!isNextEnabled)
+            .disabled(!viewModel.isNextEnabled)
             .padding(.horizontal)
             .padding(.bottom, 16)
         }
         .padding(.top, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("P050"))
-        .animation(.easeInOut, value: step)
+        .animation(.easeInOut, value: viewModel.step)
         .sheet(item: $timeEditing) { editing in
             TimeWheelSheet(
                 title: editing.title,
@@ -90,32 +85,22 @@ struct GoalSettingView: View {
                 onDone: editing.onSave
             )
         }
-    }
-
-    private var questionTitle: String {
-        switch step {
-        case 1: return "어떤 습관 목표를 달성하시겠어요?"
-        case 2: return "\(selectedHabit ?? "") 습관이\n언제쯤 형성되길 원하시나요?"
-        case 3: return "평소 식사시간을 알려주세요!"
-        default: return "평소 외출시간을 알려주세요!"
-        }
-    }
-
-    private var isNextEnabled: Bool {
-        switch step {
-        case 1: return selectedHabit != nil
-        case 2: return selectedPeriod != nil
-        default: return true
+        .fullScreenCover(isPresented: $isSettingEnvironment) {
+            GoalSetting_LoadingView(catType: catType, onStart: onStart)
         }
     }
 
     @ViewBuilder
     private var stepContent: some View {
-        switch step {
+        switch viewModel.step {
         case 1:
-            optionList(options: habitOptions, selection: $selectedHabit)
+            optionList(options: viewModel.habitOptions, selected: viewModel.selectedHabit) {
+                viewModel.selectHabit($0)
+            }
         case 2:
-            optionList(options: periodOptions, selection: $selectedPeriod)
+            optionList(options: viewModel.periodOptions, selected: viewModel.selectedPeriod) {
+                viewModel.selectPeriod($0)
+            }
         case 3:
             mealTimeContent
         default:
@@ -124,21 +109,21 @@ struct GoalSettingView: View {
     }
 
     // 설정1, 설정2 공용 선택지 버튼 목록
-    private func optionList(options: [String], selection: Binding<String?>) -> some View {
+    private func optionList(options: [String], selected: String?, onSelect: @escaping (String) -> Void) -> some View {
         VStack(spacing: 16) {
             ForEach(options, id: \.self) { option in
                 Button {
-                    selection.wrappedValue = option
+                    onSelect(option)
                 } label: {
                     Text(option)
                         .font(.body)
                         .fontWeight(.medium)
                         .frame(width: 350, height: 56)
-                        .background(selection.wrappedValue == option ? Color("P200") : Color("W"))
+                        .background(selected == option ? Color("P200") : Color("W"))
                         .foregroundColor(.primary)
                         .overlay(
                             RoundedRectangle(cornerRadius: 28)
-                                .stroke(selection.wrappedValue == option ? Color("P400") : .clear, lineWidth: 2)
+                                .stroke(selected == option ? Color("P400") : .clear, lineWidth: 2)
                         )
                         .cornerRadius(28)
                 }
@@ -149,7 +134,7 @@ struct GoalSettingView: View {
     // 설정3: 식사시간
     private var mealTimeContent: some View {
         VStack(spacing: 16) {
-            ForEach($meals) { $meal in
+            ForEach(viewModel.meals) { meal in
                 HStack(spacing: 12) {
                     Text(meal.name)
                         .font(.body)
@@ -160,10 +145,10 @@ struct GoalSettingView: View {
                         timeEditing = TimeEditing(
                             title: "\(meal.name) 식사 시간",
                             initialTime: meal.time,
-                            onSave: { meal.time = $0 }
+                            onSave: { viewModel.updateMealTime(id: meal.id, time: $0) }
                         )
                     } label: {
-                        Text(timeText(meal.time))
+                        Text(viewModel.timeText(meal.time))
                             .font(.body)
                             .fontWeight(.medium)
                             .frame(maxWidth: .infinity)
@@ -175,7 +160,7 @@ struct GoalSettingView: View {
                     .disabled(meal.isSkipped)
 
                     Button {
-                        meal.isSkipped.toggle()
+                        viewModel.toggleMealSkipped(id: meal.id)
                     } label: {
                         Text("먹지 않음")
                             .font(.system(size: 14, weight: .medium))
@@ -196,13 +181,7 @@ struct GoalSettingView: View {
             outingSection(title: "돌아오는 시간", keyPath: \.arrival)
 
             Button {
-                let count = outings.filter { $0.isCustom }.count + 1
-                outings.append(OutingTime(
-                    label: "추가 \(count)",
-                    departure: OutingTime.makeTime(9, 0),
-                    arrival: OutingTime.makeTime(20, 0),
-                    isCustom: true
-                ))
+                viewModel.addOutingTime()
             } label: {
                 Text("+ 추가하기")
                     .font(.body)
@@ -225,7 +204,7 @@ struct GoalSettingView: View {
             Text(title)
                 .font(.system(size: 18, weight: .bold))
 
-            ForEach($outings) { $outing in
+            ForEach(viewModel.outings) { outing in
                 HStack {
                     Text(outing.label)
                         .font(.body)
@@ -235,10 +214,10 @@ struct GoalSettingView: View {
                         timeEditing = TimeEditing(
                             title: "\(outing.label) \(title)",
                             initialTime: outing[keyPath: keyPath],
-                            onSave: { outing[keyPath: keyPath] = $0 }
+                            onSave: { viewModel.updateOutingTime(id: outing.id, keyPath: keyPath, time: $0) }
                         )
                     } label: {
-                        Text(timeText(outing[keyPath: keyPath]))
+                        Text(viewModel.timeText(outing[keyPath: keyPath]))
                             .font(.body)
                             .fontWeight(.medium)
                             .frame(width: 150, height: 44)
@@ -253,48 +232,6 @@ struct GoalSettingView: View {
         .padding(20)
         .background(Color("W"))
         .cornerRadius(20)
-    }
-
-    // "오전 9시", "오후 12시 30분" 형태로 변환
-    private func timeText(_ date: Date) -> String {
-        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
-        let hour = components.hour ?? 0
-        let minute = components.minute ?? 0
-        let prefix = hour < 12 ? "오전" : "오후"
-        let hour12 = hour % 12 == 0 ? 12 : hour % 12
-        return minute == 0 ? "\(prefix) \(hour12)시" : "\(prefix) \(hour12)시 \(minute)분"
-    }
-}
-
-// MARK: - 모델
-
-private struct MealTime: Identifiable {
-    let id = UUID()
-    let name: String
-    var time: Date
-    var isSkipped: Bool = false
-
-    static let defaults: [MealTime] = [
-        MealTime(name: "아침", time: OutingTime.makeTime(9, 0)),
-        MealTime(name: "점심", time: OutingTime.makeTime(12, 30)),
-        MealTime(name: "저녁", time: OutingTime.makeTime(19, 0))
-    ]
-}
-
-private struct OutingTime: Identifiable {
-    let id = UUID()
-    var label: String
-    var departure: Date
-    var arrival: Date
-    var isCustom: Bool = false
-
-    static let defaults: [OutingTime] = [
-        OutingTime(label: "평일", departure: makeTime(9, 0), arrival: makeTime(20, 0)),
-        OutingTime(label: "주말", departure: makeTime(12, 30), arrival: makeTime(18, 0))
-    ]
-
-    static func makeTime(_ hour: Int, _ minute: Int) -> Date {
-        Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? Date()
     }
 }
 
