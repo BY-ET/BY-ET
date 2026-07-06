@@ -3,7 +3,9 @@ import SwiftUI
 struct TestResultsView: View {
     @ObservedObject var viewModel: TestViewModel
     let onClose: () -> Void
-    
+
+    @State private var showGoalSetting = false
+
     var body: some View {
         let content = CatTypeRepository.content(for: viewModel.catType ?? .type1)
         
@@ -79,6 +81,7 @@ struct TestResultsView: View {
                 .multilineTextAlignment(.center)
                 .padding(.bottom,20)
             Button {
+                showGoalSetting = true
             } label: {
                 Text("목표 설정하러 가기")
                     .frame(width: 350, height: 56)
@@ -88,6 +91,11 @@ struct TestResultsView: View {
                 }
             .padding(.horizontal)
             .padding(.bottom, 20)
+        }
+        .fullScreenCover(isPresented: $showGoalSetting) {
+            GoalSettingView(onClose: {
+                showGoalSetting = false
+            }, catType: viewModel.catType ?? .type1, onStart: onClose)
         }
     }
 }
