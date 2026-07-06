@@ -6,6 +6,7 @@ struct GoalSetting_LoadingView: View {
 
     @State private var fillProgress: CGFloat = 0
     @State private var isFinished = false
+    @AppStorage("nickname") private var nickname: String = ""
 
     var body: some View {
         let content = CatTypeRepository.content(for: catType)
@@ -35,10 +36,9 @@ struct GoalSetting_LoadingView: View {
                     .rotationEffect(.degrees(-90))
                     .scaleEffect(x: -1)
             }
-
             Text(isFinished
                  ? "멀게만 느껴지는 큰 목표는 잠시 잊으세요.\n조금씩 나아지는 내 모습을 지켜보세요."
-                 : "사용자님의 최종 목표를 달성하기 위한\n최적의 환경을 만들고 있어요!")
+                 : "\(nickname)님의 최종 목표를 달성하기 위한\n최적의 환경을 만들고 있어요!")
                 .font(.system(size: 16, weight: .semibold))
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)

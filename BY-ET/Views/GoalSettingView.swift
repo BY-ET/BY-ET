@@ -8,6 +8,7 @@ struct GoalSettingView: View {
 
     @State private var timeEditing: TimeEditing?
     @State private var isSettingEnvironment = false
+    @AppStorage("nickname") private var nickname: String = ""
 
     var body: some View {
         VStack(spacing: 32) {
@@ -25,7 +26,7 @@ struct GoalSettingView: View {
                         .foregroundColor(.primary)
                 }
                 Spacer()
-                Text("목표 설정")
+                Text("\(nickname)님의 목표 설정")
                 Spacer()
             }
             .frame(height: 24)
