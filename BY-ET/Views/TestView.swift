@@ -3,6 +3,7 @@ import SwiftUI
 struct TestView: View {
     @StateObject private var viewModel = TestViewModel()
     let onClose: () -> Void
+    var onBackToOnboarding: () -> Void = {}
 
     var body: some View {
         VStack {
@@ -11,7 +12,6 @@ struct TestView: View {
                     question: question,
                     progress: viewModel.progress,
                     isLastQuestion: viewModel.isLastQuestion,
-                    canGoBack: viewModel.canGoBack,
                     selectedOption: viewModel.selectedOptionForCurrentQuestion,
                     onSelect: { option in
                         withAnimation {
@@ -24,8 +24,13 @@ struct TestView: View {
                         }
                     },
                     onBack: {
-                        withAnimation {
-                            viewModel.goToPreviousQuestion()
+                        // Q1에서는 온보딩 화면으로 복귀
+                        if viewModel.canGoBack {
+                            withAnimation {
+                                viewModel.goToPreviousQuestion()
+                            }
+                        } else {
+                            onBackToOnboarding()
                         }
                     }
                 )
@@ -42,7 +47,6 @@ private struct QuestionPageView: View {
     let question: Question
     let progress: Double
     let isLastQuestion: Bool
-    let canGoBack: Bool
     let selectedOption: QuestionOption?
     let onSelect: (QuestionOption) -> Void
     let onShowResult: () -> Void
@@ -51,14 +55,12 @@ private struct QuestionPageView: View {
     var body: some View {
         VStack(spacing: 32) {
             HStack {
-                if canGoBack {
-                    Button {
-                        onBack()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
+                Button {
+                    onBack()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.primary)
                 }
                 Spacer()
                 Text("유형 탐색")

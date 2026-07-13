@@ -28,6 +28,8 @@ struct ContentView: View {
             case .survey:
                 TestView(onClose: {
                     currentScreen = .home
+                }, onBackToOnboarding: {
+                    currentScreen = .onboarding
                 })
             case .home:
                 MainTabView()
