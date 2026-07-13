@@ -62,6 +62,7 @@ struct GoalSetting_LoadingView: View {
             .padding(.horizontal)
             .padding(.bottom, 16)
         }
+        .background(Color("P050"))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             withAnimation(.linear(duration: 4)) {

@@ -10,12 +10,19 @@ struct ContentView: View {
     @State private var currentScreen: AppScreen = .onboarding
     // 테스트용: 결과 화면에 넣어줄 뷰모델 (catType 미설정 시 type1로 표시됨)
     @StateObject private var testViewModel = TestViewModel()
+    @AppStorage("hasGoal") private var hasGoal: Bool = false
+    @AppStorage("starCount") private var starCount: Int = 0
+    @AppStorage("weeklyProgress") private var weeklyProgress: Double = 0
 
     var body: some View {
         Group {
             switch currentScreen {
             case .onboarding:
                 OnboardingView(onStart: {
+                    // 새로운 플로우 시작 시 이전 목표 설정 기록·별·달성률 초기화
+                    hasGoal = false
+                    starCount = 0
+                    weeklyProgress = 0
                     currentScreen = .survey
                 })
             case .survey:
@@ -23,7 +30,7 @@ struct ContentView: View {
                     currentScreen = .home
                 })
             case .home:
-                HomeView()
+                MainTabView()
             }
         }
         // 테스트용: TestResultsView부터 바로 확인

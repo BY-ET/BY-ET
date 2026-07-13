@@ -5,6 +5,7 @@ struct TestResultsView: View {
     let onClose: () -> Void
 
     @State private var showGoalSetting = false
+    @AppStorage("hasGoal") private var hasGoal: Bool = false
 
     var body: some View {
         let content = CatTypeRepository.content(for: viewModel.catType ?? .type1)
@@ -95,7 +96,10 @@ struct TestResultsView: View {
         .fullScreenCover(isPresented: $showGoalSetting) {
             GoalSettingView(onClose: {
                 showGoalSetting = false
-            }, catType: viewModel.catType ?? .type1, onStart: onClose)
+            }, catType: viewModel.catType ?? .type1, onStart: {
+                hasGoal = true
+                onClose()
+            })
         }
     }
 }

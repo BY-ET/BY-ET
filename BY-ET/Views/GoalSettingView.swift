@@ -36,16 +36,17 @@ struct GoalSettingView: View {
                 .padding(.horizontal)
 
             // 설정 번호 + 질문
-            VStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("설정\(viewModel.step)")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(Color("P400"))
                 Text(viewModel.questionTitle)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .multilineTextAlignment(.leading)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
 
             // 선택지
             ScrollView {
@@ -135,6 +136,14 @@ struct GoalSettingView: View {
     // 설정3: 식사시간
     private var mealTimeContent: some View {
         VStack(spacing: 16) {
+            // 먹지 않음 체크 버튼 열 상단 라벨
+            HStack {
+                Spacer()
+                Text("먹지 않음")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+
             ForEach(viewModel.meals) { meal in
                 HStack(spacing: 12) {
                     Text(meal.name)
@@ -144,18 +153,18 @@ struct GoalSettingView: View {
 
                     Button {
                         timeEditing = TimeEditing(
-                            title: "\(meal.name) 식사 시간",
+                            title: "\(meal.name) 식사시간 설정",
                             initialTime: meal.time,
                             onSave: { viewModel.updateMealTime(id: meal.id, time: $0) }
                         )
                     } label: {
-                        Text(viewModel.timeText(meal.time))
+                        Text(meal.isSkipped ? "먹지 않음" : viewModel.timeText(meal.time))
                             .font(.body)
                             .fontWeight(.medium)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
                             .background(Color("W"))
-                            .foregroundColor(meal.isSkipped ? .secondary : .primary)
+                            .foregroundColor(.primary)
                             .cornerRadius(28)
                     }
                     .disabled(meal.isSkipped)
@@ -163,12 +172,12 @@ struct GoalSettingView: View {
                     Button {
                         viewModel.toggleMealSkipped(id: meal.id)
                     } label: {
-                        Text("먹지 않음")
-                            .font(.system(size: 14, weight: .medium))
-                            .frame(width: 80, height: 56)
-                            .background(meal.isSkipped ? Color("P400") : Color("W"))
-                            .foregroundColor(meal.isSkipped ? .white : .primary)
-                            .cornerRadius(28)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 32, height: 32)
+                            .background(meal.isSkipped ? Color("P400") : Color("G200"))
+                            .clipShape(Circle())
                     }
                 }
             }
@@ -180,23 +189,6 @@ struct GoalSettingView: View {
         VStack(spacing: 16) {
             outingSection(title: "나가는 시간", keyPath: \.departure)
             outingSection(title: "돌아오는 시간", keyPath: \.arrival)
-
-            Button {
-                viewModel.addOutingTime()
-            } label: {
-                Text("+ 추가하기")
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color("W"))
-                    .foregroundColor(Color("P400"))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 28)
-                            .stroke(Color("P400"), style: StrokeStyle(lineWidth: 1.5, dash: [6]))
-                    )
-                    .cornerRadius(28)
-            }
         }
     }
 
@@ -221,18 +213,17 @@ struct GoalSettingView: View {
                         Text(viewModel.timeText(outing[keyPath: keyPath]))
                             .font(.body)
                             .fontWeight(.medium)
-                            .frame(width: 150, height: 44)
-                            .background(Color("P050"))
-                            .foregroundColor(.primary)
+                            .frame(width: 270, height: 40)
+                            .background(Color("W"))
+                            .foregroundColor(.black)
                             .cornerRadius(22)
                     }
+
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(Color("W"))
-        .cornerRadius(20)
     }
 }
 
@@ -256,18 +247,27 @@ private struct TimeWheelSheet: View {
         VStack(spacing: 16) {
             Text(title)
                 .font(.headline)
+                .fontWeight(.bold)
                 .padding(.top, 24)
 
-            DatePicker("", selection: $time, displayedComponents: .hourAndMinute)
-                .datePickerStyle(.wheel)
-                .labelsHidden()
-                .environment(\.locale, Locale(identifier: "ko_KR"))
+            // 선택된 시간 표시 캡슐
+            Text(selectedTimeText)
+                .font(.body)
+                .fontWeight(.bold)
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                .background(Color("P050"))
+                .cornerRadius(28)
+                .padding(.horizontal)
+
+            KoreanTimeWheelPicker(time: $time)
+                .padding(.horizontal)
 
             Button {
                 onDone(time)
                 dismiss()
             } label: {
-                Text("완료")
+                Text("설정 완료")
                     .font(.body)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
@@ -279,8 +279,125 @@ private struct TimeWheelSheet: View {
             .padding(.horizontal)
             .padding(.bottom, 20)
         }
-        .presentationDetents([.height(360)])
+        .presentationDetents([.height(500)])
         .presentationDragIndicator(.visible)
+        .presentationBackground(Color("W"))
+    }
+
+    // "오전 9시", "오후 1시 30분" 형태로 표시
+    private var selectedTimeText: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        let minute = Calendar.current.component(.minute, from: time)
+        formatter.dateFormat = minute == 0 ? "a h시" : "a h시 m분"
+        return formatter.string(from: time)
+    }
+}
+
+// MARK: - 커스텀 시간 휠 피커 (오전/오후 · 시 · 분)
+
+private struct KoreanTimeWheelPicker: View {
+    @Binding var time: Date
+
+    private static let periods = ["오전", "오후"]
+    private static let hours = Array(1...12)
+    private static let minutes = Array(stride(from: 0, through: 55, by: 5))
+
+    var body: some View {
+        HStack(spacing: 12) {
+            WheelColumn(items: Self.periods, selection: periodBinding) { $0 }
+            WheelColumn(items: Self.hours, selection: hourBinding) { "\($0)" }
+            WheelColumn(items: Self.minutes, selection: minuteBinding) { String(format: "%02d", $0) }
+        }
+    }
+
+    private var periodBinding: Binding<String> {
+        Binding {
+            Calendar.current.component(.hour, from: time) < 12 ? "오전" : "오후"
+        } set: { newValue in
+            let hour = Calendar.current.component(.hour, from: time)
+            if newValue == "오전", hour >= 12 {
+                setHour(hour - 12)
+            } else if newValue == "오후", hour < 12 {
+                setHour(hour + 12)
+            }
+        }
+    }
+
+    private var hourBinding: Binding<Int> {
+        Binding {
+            let hour12 = Calendar.current.component(.hour, from: time) % 12
+            return hour12 == 0 ? 12 : hour12
+        } set: { newValue in
+            let isPM = Calendar.current.component(.hour, from: time) >= 12
+            setHour((newValue % 12) + (isPM ? 12 : 0))
+        }
+    }
+
+    private var minuteBinding: Binding<Int> {
+        Binding {
+            roundedMinute
+        } set: { newValue in
+            let hour = Calendar.current.component(.hour, from: time)
+            time = Calendar.current.date(bySettingHour: hour, minute: newValue, second: 0, of: time) ?? time
+        }
+    }
+
+    // 휠 항목은 5분 단위라서 현재 분을 5분 단위로 내림
+    private var roundedMinute: Int {
+        min(55, (Calendar.current.component(.minute, from: time) / 5) * 5)
+    }
+
+    private func setHour(_ hour: Int) {
+        time = Calendar.current.date(bySettingHour: hour, minute: roundedMinute, second: 0, of: time) ?? time
+    }
+}
+
+// 한 열짜리 스냅 휠. 가운데로 스냅된 항목에 분홍 캡슐 하이라이트를 그린다.
+private struct WheelColumn<Item: Hashable>: View {
+    let items: [Item]
+    @Binding var selection: Item
+    let label: (Item) -> String
+
+    @State private var scrolledItem: Item?
+
+    private let rowHeight: CGFloat = 52
+    private let visibleRows = 5
+
+    var body: some View {
+        ScrollView(.vertical) {
+            LazyVStack(spacing: 0) {
+                ForEach(items, id: \.self) { item in
+                    Text(label(item))
+                        .font(.system(size: 22, weight: item == scrolledItem ? .bold : .medium))
+                        .foregroundColor(item == scrolledItem ? Color("P400") : Color(.systemGray3))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: rowHeight)
+                        .background {
+                            if item == scrolledItem {
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color("P050"))
+                                    .padding(.vertical, 3)
+                                    .padding(.horizontal, 6)
+                            }
+                        }
+                        .id(item)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .frame(height: rowHeight * CGFloat(visibleRows))
+        .contentMargins(.vertical, rowHeight * CGFloat(visibleRows / 2), for: .scrollContent)
+        .scrollTargetBehavior(.viewAligned)
+        .scrollPosition(id: $scrolledItem, anchor: .center)
+        .scrollIndicators(.hidden)
+        .onAppear { scrolledItem = selection }
+        .onChange(of: scrolledItem) { _, newValue in
+            if let newValue, newValue != selection { selection = newValue }
+        }
+        .onChange(of: selection) { _, newValue in
+            if scrolledItem != newValue { scrolledItem = newValue }
+        }
     }
 }
 
