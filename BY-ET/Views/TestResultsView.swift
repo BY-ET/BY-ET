@@ -5,6 +5,7 @@ struct TestResultsView: View {
     let onClose: () -> Void
 
     @State private var showGoalSetting = false
+    @AppStorage("hasGoal") private var hasGoal: Bool = false
 
     var body: some View {
         let content = CatTypeRepository.content(for: viewModel.catType ?? .type1)
@@ -90,12 +91,25 @@ struct TestResultsView: View {
                     .cornerRadius(28)
                 }
             .padding(.horizontal)
+            .padding(.bottom, 12)
+
+            // 목표 설정 없이 홈으로 이동
+            Button {
+                onClose()
+            } label: {
+                Text("아니요. 다음에 설정할게요.")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
             .padding(.bottom, 20)
         }
         .fullScreenCover(isPresented: $showGoalSetting) {
             GoalSettingView(onClose: {
                 showGoalSetting = false
-            }, catType: viewModel.catType ?? .type1, onStart: onClose)
+            }, catType: viewModel.catType ?? .type1, onStart: {
+                hasGoal = true
+                onClose()
+            })
         }
     }
 }
