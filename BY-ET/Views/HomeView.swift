@@ -15,6 +15,11 @@ struct HomeView: View {
     @State private var weekNumber = 1
     @State private var weeklyGoalMessage = "시작이 반이다. 일단은 해보자!"
 
+    // 요일별 달성률 (일~토, 0.0~1.0) - TODO: RutineView 완성 후 실제 데이터 연동
+    @State private var dailyProgress: [Double] = Array(repeating: 0, count: 7)
+
+    private static let dayLabels = ["일", "월", "화", "수", "목", "금", "토"]
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -151,9 +156,43 @@ struct HomeView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(progressColor)
             }
-            CustomProgressBar(progress: progress, fillColor: progressColor)
+            CustomProgressBar(progress: progress, trackColor: Color("P050"), fillColor: progressColor, width: 310)
+
+            dailyProgressRow
         }
-        .padding(.top, 24)
+        .padding(20)
+        .frame(maxWidth: .infinity)
+        .background(Color("W"))
+        .cornerRadius(20)
+        .padding(.top, 8)
+    }
+
+    // MARK: - 요일별 달성률
+
+    private var dailyProgressRow: some View {
+        HStack {
+            ForEach(Array(Self.dayLabels.enumerated()), id: \.offset) { index, day in
+                VStack(spacing: 10) {
+                    Text(day)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                    dayCircle(progress: hasGoal ? dailyProgress[index] : 0)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.top, 8)
+    }
+
+    // 요일별 달성 아이콘: 미달성은 빈 원, 달성률에 따라 연한/진한 핑크로 채움
+    private func dayCircle(progress: Double) -> some View {
+        Circle()
+            .fill(progress <= 0 ? Color("W") : (progress >= 0.7 ? Color("P400") : Color("P200")))
+            .overlay(
+                Circle()
+                    .stroke(progress <= 0 ? Color("G200") : .clear, lineWidth: 1.5)
+            )
+            .frame(width: 24, height: 24)
     }
 
 }
