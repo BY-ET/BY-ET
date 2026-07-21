@@ -199,8 +199,15 @@ struct HomeView: View {
     }
 
     // 요일별 달성 아이콘: 원을 삼등분해서 습관 1개 완료마다 한 칸씩 채움 (12시 방향부터 시계방향)
+    // 완료 개수에 따라 채움 색이 진해짐 (1개: P200, 2개: P300, 3개: P400)
     private func dayCircle(count: Int) -> some View {
-        ZStack {
+        let fillColor: Color = switch count {
+        case 1: Color("P200")
+        case 2: Color("P300")
+        default: Color("P400")
+        }
+
+        return ZStack {
             Circle()
                 .fill(Color("W"))
             ForEach(0..<count, id: \.self) { index in
@@ -208,10 +215,10 @@ struct HomeView: View {
                     startAngle: .degrees(-90 + Double(index) * 120),
                     endAngle: .degrees(-90 + Double(index + 1) * 120)
                 )
-                .fill(Color("P400"))
+                .fill(fillColor)
             }
             Circle()
-                .stroke(count >= HabitProgressStore.cardsPerDay ? Color("P400") : Color("G200"), lineWidth: 1.5)
+                .stroke(count > 0 ? fillColor : Color("G200"), lineWidth: 1.5)
         }
         .frame(width: 24, height: 24)
     }
