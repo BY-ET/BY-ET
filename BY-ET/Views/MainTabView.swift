@@ -16,15 +16,18 @@ struct MainTabView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Group {
-                switch selectedTab {
-                case .rutine:
-                    RutineView()
-                case .home:
-                    HomeView(catType: catType)
-                case .myCat:
-                    MyCatView()
-                }
+            // 탭을 전환해도 각 뷰의 상태(카드 뒤집힘/완료 등)가 유지되도록
+            // 뷰를 제거하지 않고 opacity로만 전환
+            ZStack {
+                RutineView()
+                    .opacity(selectedTab == .rutine ? 1 : 0)
+                    .allowsHitTesting(selectedTab == .rutine)
+                HomeView(catType: catType)
+                    .opacity(selectedTab == .home ? 1 : 0)
+                    .allowsHitTesting(selectedTab == .home)
+                MyCatView()
+                    .opacity(selectedTab == .myCat ? 1 : 0)
+                    .allowsHitTesting(selectedTab == .myCat)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
