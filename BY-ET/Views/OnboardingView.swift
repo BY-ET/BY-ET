@@ -55,6 +55,9 @@ struct OnboardingView: View {
 
         }
         .ignoresSafeArea(.keyboard)
+        .onAppear {
+            nickname = savedNickname
+        }
     }
 }
 
