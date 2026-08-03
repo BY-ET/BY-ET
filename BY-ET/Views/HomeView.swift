@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct HomeView: View {
-    var catType: CatType = .type4
+    @AppStorage("catTypeRaw") private var catTypeRaw: String = CatType.type4.rawValue
+    private var catType: CatType { CatType(rawValue: catTypeRaw) ?? .type4 }
 
     @AppStorage("nickname") private var nickname: String = ""
     @AppStorage("hasGoal") private var hasGoal: Bool = false
@@ -247,5 +248,5 @@ struct PieSegment: Shape {
 }
 
 #Preview {
-    HomeView(catType: .type4)
+    HomeView()
 }

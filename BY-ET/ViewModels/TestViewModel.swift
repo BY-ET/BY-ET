@@ -43,6 +43,7 @@ final class TestViewModel: ObservableObject {
             let result = SurveyResultCalculator.calculate(from: answers)
             catType = result.catType
             categoryJudgements = result.judgements
+            UserDefaults.standard.set(result.catType.rawValue, forKey: "catTypeRaw")
 
             currentQuestion = nil
             isFinished = true

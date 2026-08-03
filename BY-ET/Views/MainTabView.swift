@@ -7,7 +7,8 @@ enum MainTab {
 }
 
 struct MainTabView: View {
-    var catType: CatType = .type4
+    @AppStorage("catTypeRaw") private var catTypeRaw: String = CatType.type4.rawValue
+    private var catType: CatType { CatType(rawValue: catTypeRaw) ?? .type4 }
 
     @State private var selectedTab: MainTab = .home
     @State private var showGoalAlert = false
@@ -22,7 +23,7 @@ struct MainTabView: View {
                 RutineView()
                     .opacity(selectedTab == .rutine ? 1 : 0)
                     .allowsHitTesting(selectedTab == .rutine)
-                HomeView(catType: catType)
+                HomeView()
                     .opacity(selectedTab == .home ? 1 : 0)
                     .allowsHitTesting(selectedTab == .home)
                 MyCatView()
@@ -82,5 +83,5 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView(catType: .type4)
+    MainTabView()
 }

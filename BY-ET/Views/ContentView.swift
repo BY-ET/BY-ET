@@ -7,12 +7,18 @@ enum AppScreen {
 }
 
 struct ContentView: View {
-    @State private var currentScreen: AppScreen = .onboarding
+    @AppStorage("hasCompletedSetup") private var hasCompletedSetup: Bool = false
+    @State private var currentScreen: AppScreen
     // 테스트용: 결과 화면에 넣어줄 뷰모델 (catType 미설정 시 type1로 표시됨)
     @StateObject private var testViewModel = TestViewModel()
     @AppStorage("hasGoal") private var hasGoal: Bool = false
     @AppStorage("starCount") private var starCount: Int = 0
     @AppStorage("weeklyProgress") private var weeklyProgress: Double = 0
+
+    init() {
+        let completed = UserDefaults.standard.bool(forKey: "hasCompletedSetup")
+        _currentScreen = State(initialValue: completed ? .home : .onboarding)
+    }
 
     var body: some View {
         Group {
@@ -27,6 +33,7 @@ struct ContentView: View {
                 })
             case .survey:
                 TestView(onClose: {
+                    hasCompletedSetup = true
                     currentScreen = .home
                 }, onBackToOnboarding: {
                     currentScreen = .onboarding
