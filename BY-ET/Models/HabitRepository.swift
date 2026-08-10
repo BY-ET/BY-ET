@@ -25,9 +25,9 @@ enum HabitCategory: String, CaseIterable {
 
     var iconName: String {
         switch self {
-        case .exercise: return "dumbbell.fill"
-        case .eat: return "fork.knife"
-        case .environment: return "leaf.fill"
+        case .exercise: return "ic_운동"
+        case .eat: return "ic_식단"
+        case .environment: return "ic_환경"
         }
     }
 }

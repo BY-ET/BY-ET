@@ -22,19 +22,20 @@ struct RutineView: View {
     var body: some View {
         VStack(spacing: 0) {
             Text("오늘의 다이어트 습관")
-                .font(.system(size: 22, weight: .bold))
-                .padding(.top, 24)
+                .font(.F_Navigation)
+                .foregroundColor(Color("BK"))
+                .padding(.top, 12)
 
             Text("진행할 습관 카드를 선택해 확인해 주세요")
-                .font(.system(size: 15))
-                .foregroundColor(.secondary)
-                .padding(.top, 12)
+                .font(.F_Bodymedium)
+                .foregroundColor(Color("BK"))
+                .padding(.top, 32)
 
             habitIconRow
                 .padding(.top, 20)
 
             habitCardPager
-                .padding(.top, 16)
+                .padding(.top, 20)
 
             Spacer(minLength: 16)
         }
@@ -70,10 +71,13 @@ struct RutineView: View {
     // MARK: - 습관 아이콘 (현재 카드에 따라 색상 변경)
 
     private var habitIconRow: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: 12) {
             ForEach(habits) { habit in
-                Image(systemName: habit.iconName)
-                    .font(.system(size: 24, weight: .semibold))
+                Image(habit.iconName)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 48, height: 48)
                     .foregroundColor(habit.id == (currentIndex ?? 0) ? Color("P400") : Color("G200"))
                     .animation(.easeInOut(duration: 0.2), value: currentIndex)
             }
@@ -151,13 +155,17 @@ struct HabitCardView: View {
 
     private var cardFront: some View {
         VStack(spacing: 0) {
-            Image(systemName: habit.iconName)
-                .font(.system(size: 26, weight: .semibold))
+            Image(habit.iconName)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 48, height: 48)
                 .foregroundColor(Color("P400"))
-                .padding(.top, 28)
+                .padding(.top, 16)
 
             Text(habit.text)
-                .font(.system(size: 20, weight: .bold))
+                .font(.F_Headline)
+                .foregroundColor(Color("BK"))
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
                 .padding(.top, 16)
@@ -165,21 +173,18 @@ struct HabitCardView: View {
             habitImage
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
-                // 완료 시 습관 완료 도장
                 .overlay(alignment: .bottomTrailing) {
                     if isCompleted {
                         Image("rutine_done")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 110)
+                            .frame(width: 120)
                             .transition(.scale(scale: 1.6).combined(with: .opacity))
+                            .padding(.trailing, 24)
                     }
-                }
-
-            Spacer(minLength: 16)
+                }.padding(.bottom, 16)
 
             completeButton
-                .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("W"))
@@ -190,29 +195,20 @@ struct HabitCardView: View {
         Image(habit.imageName)
             .resizable()
             .scaledToFit()
+            .frame(width: 260, height: 260)
     }
 
     private var completeButton: some View {
-        Button {
+        AppButton(
+            title: isCompleted ? "완료!" : "완료했나요?",
+            style: isCompleted ? .pink : .pinkOutline,
+            size: .medium
+        ) {
             withAnimation(.spring(duration: 0.4)) {
                 isCompleted = true
             }
             starCount += 1
             updateWeeklyProgress()
-        } label: {
-            Text(isCompleted ? "완료!" : "완료했나요?")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(isCompleted ? Color("W") : Color("P400"))
-                .padding(.horizontal, 36)
-                .padding(.vertical, 12)
-                .background(
-                    Capsule()
-                        .fill(isCompleted ? Color("P400") : Color("W"))
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(Color("P400"), lineWidth: 1.5)
-                )
         }
         .disabled(isCompleted)
     }
@@ -251,7 +247,7 @@ struct HabitCardView: View {
 
 #Preview("카드 앞면") {
     HabitCardView(
-        habit: Habit(id: 0, title: "운동", iconName: "dumbbell.fill", text: "배달 완료 전,\n스쿼트 10개", imageName: "rutine_exercise_1"),
+        habit: Habit(id: 0, title: "운동", iconName: "ic_운동", text: "배달 완료 전,\n스쿼트 10개", imageName: "rutine_exercise_1"),
         isFlipped: .constant(true),
         isCompleted: .constant(true)
     )
