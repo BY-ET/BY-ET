@@ -11,6 +11,7 @@ struct TestView: View {
                 QuestionPageView(
                     question: question,
                     progress: viewModel.progress,
+                    totalQuestions: viewModel.totalQuestions,
                     isLastQuestion: viewModel.isLastQuestion,
                     selectedOption: viewModel.selectedOptionForCurrentQuestion,
                     onSelect: { option in
@@ -46,6 +47,7 @@ struct TestView: View {
 private struct QuestionPageView: View {
     let question: Question
     let progress: Double
+    let totalQuestions: Int
     let isLastQuestion: Bool
     let selectedOption: QuestionOption?
     let onSelect: (QuestionOption) -> Void
@@ -53,81 +55,79 @@ private struct QuestionPageView: View {
     let onBack: () -> Void
 
     var body: some View {
-        VStack(spacing: 32) {
-            HStack {
-                Button {
-                    onBack()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.primary)
+        ZStack{
+            VStack(spacing: 0) {
+                ZStack{
+                    Text("유형 탐색")
+                        .font(.F_Navigation)
+                        .foregroundColor(Color("BK"))
+                    HStack (spacing: 0){
+                        Button {
+                            onBack()
+                        } label: {
+                            Image("ic_arrow_left")
+                                .renderingMode(.template)
+                                .foregroundColor(Color("G500"))
+                        }
+                        Spacer()
+                    }
+                }.padding(.bottom, 20)
+
+                CustomProgressBar(progress: progress)
+                    .padding(.bottom, 8)
+
+                HStack(spacing: 0){
+                    Spacer()
+                    Text("\(question.order)/\(totalQuestions)")
+                        .font(.F_footnoteregular)
+                        .foregroundColor(Color("G400"))
                 }
-                Spacer()
-                Text("유형 탐색")
-                Spacer()
-            }
-            .frame(height: 24)
-            .padding(.horizontal)
+                .padding(.bottom, 40)
+                
+                HStack{
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Q\(question.order).")
+                            .font(.F_Headline)
+                            .foregroundColor(Color("P400"))
+                        
+                        Text(question.title)
+                            .font(.F_Headline)
+                            .foregroundColor(Color("BK"))
+                    }
+                    Spacer()
+                }
+                .padding(.bottom, 182)
 
-            CustomProgressBar(progress: progress)
-                .padding(.horizontal)
-
-            Spacer()
-
-            VStack(spacing: 8) {
-                Text("Q\(question.order).")
-                    .font(.system(size: 24, weight: .bold))
-                    .fontWeight(.semibold)
-                    .foregroundColor(Color("P400"))
-                Text(question.title)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            }
-
-            VStack(spacing: 16) {
-                ForEach(question.options) { option in
-                    Button {
-                        onSelect(option)
-                    } label: {
-                        Text(option.text)
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .frame(width: 350, height: 56)
-                            .background(selectedOption == option ? Color("P200") : Color("W"))
-                            .foregroundColor(.primary)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 28)
-                                    .stroke(selectedOption == option ? Color("P400") : .clear, lineWidth: 2)
-                            )
-                            .cornerRadius(28)
+                VStack(spacing: 8) {
+                    ForEach(question.options) { option in
+                        AppButton(title: option.text,
+                                  style: selectedOption == option ? .questionSelected : .question,
+                                  size: .question) {
+                            onSelect(option)
+                        }
+//                        AppButton(title: "테스트 시작하기",
+//                                  style: isNicknameValid ? .pink : .gray,
+//                                  size: .large) {
+//                            savedNickname = nickname.trimmingCharacters(in: .whitespaces)
+//                            onStart()
+//                        }
                     }
                 }
+                Spacer()
             }
-            .padding(.horizontal)
-
-            Spacer()
-
-            if isLastQuestion {
-                Button {
-                    onShowResult()
-                } label: {
-                    Text("결과보기")
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(selectedOption == nil ? Color("G200") : Color("P400"))
-                        .foregroundColor(.white)
-                        .cornerRadius(28)
+            VStack(spacing: 0){
+                Spacer()
+                if isLastQuestion {
+                    AppButton(title: "결과보기",
+                              style: selectedOption == nil ? .graysoft : .pink,
+                              size: .large) {
+                        onShowResult()
+                    }
+                    .disabled(selectedOption == nil)
+                    .padding(.bottom, 53)
                 }
-                .disabled(selectedOption == nil)
-                .padding(.horizontal)
-                .padding(.bottom, 16)
             }
-        }
-        .padding(.top, 24)
+        }.padding(.horizontal, 20)
     }
 }
 
