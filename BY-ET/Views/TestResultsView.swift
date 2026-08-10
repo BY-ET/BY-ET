@@ -9,100 +9,102 @@ struct TestResultsView: View {
 
     var body: some View {
         let content = CatTypeRepository.content(for: viewModel.catType ?? .type1)
-        
-        ScrollView {
-            VStack(spacing: 24) {
-                HStack {
+        VStack(spacing: 0){
+            ZStack{
+                Text("테스트 결과")
+                    .font(.F_Navigation)
+                    .foregroundColor(Color("BK"))
+                HStack (spacing: 0){
                     Button {
                         onClose()
                     } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primary)
+                        Image("ic_close")
+                            .renderingMode(.template)
+                            .foregroundColor(Color("G500"))
                     }
                     Spacer()
-                    Text("테스트 결과")
-                    Spacer()
                 }
-                .padding(.horizontal)
-                .padding(.top, 16)
-                
-                ZStack{
-                    RoundedRectangle(cornerRadius: 40)
-                        .fill(Color("W"))
-                        .frame(width: 350, height: 404)
-                    VStack{
-                        Text(viewModel.catType?.rawValue ?? "")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(Color("P400"))
-                            .multilineTextAlignment(.center)
-                        Image(content.imageName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 280, height: 280)
-                    }
-                }
-                
-                VStack(alignment: .leading, spacing: 4){
-                    Text("당신의 유형은")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(Color("P400"))
-                    Text(viewModel.catType?.rawValue ?? "")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(Color("P400"))
-                        .padding(.bottom, 10)
-                    Text(content.quote)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color("P400"))
-                        .padding(.bottom, 10)
-                }.padding(.horizontal,16)
-                
-
-                VStack(alignment: .leading,spacing: 4){
-                    ForEach(content.sections) { section in
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text(section.title)
-                                .font(.system(size: 18, weight: .bold))
-                            Text(section.body)
-                                .font(.system(size: 15))
-                                .lineSpacing(4)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(20)
-                        .background(Color("W"))
-                        .cornerRadius(20)
-                        .padding(.bottom, 10)
-                    }
-                }.padding(.horizontal,20)
             }
-            .padding(.bottom, 12)
-            Text("이를 토대로\n목표 습관을 설정할까요?")
-                .font(.system(size: 22, weight: .bold))
-                .multilineTextAlignment(.center)
-                .padding(.bottom,20)
-            Button {
-                showGoalSetting = true
-            } label: {
-                Text("목표 설정하러 가기")
-                    .frame(width: 350, height: 56)
-                    .background(Color("P400"))
-                    .foregroundColor(.white)
-                    .cornerRadius(28)
-                }
-            .padding(.horizontal)
-            .padding(.bottom, 12)
+                .padding(.horizontal,20)
+            
+            ScrollView {
+                VStack(spacing: 0) {
+                    VStack(spacing: 0) {
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 40)
+                                .fill(Color("W"))
+                                .frame(width: 350, height: 409)
+                            VStack(spacing: 20){
+                                Text(viewModel.catType?.rawValue ?? "에너지가 넘쳐 흐르는 파워 고양이")
+                                    .font(.F_Headline)
+                                    .foregroundColor(Color("P400"))
+                                    .multilineTextAlignment(.center)
+                                Image(content.imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 280, height: 280)
+                            }
+                        }.padding(.bottom, 12)
+                            .padding(.top, 20)
 
-            // 목표 설정 없이 홈으로 이동
-            Button {
-                onClose()
-            } label: {
-                Text("아니요. 다음에 설정할게요.")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 0){
+                            Text("당신의 유형은")
+                                .font(.F_Headline)
+                                .foregroundColor(Color("P400"))
+                            Text(viewModel.catType?.rawValue ?? "에너지가 넘쳐 흐르는 파워 고양이!")
+                                .font(.F_Headline)
+                                .foregroundColor(Color("P400"))
+                                .padding(.bottom, 12)
+                            Text(content.quote)
+                                .font(.F_Bodyoption)
+                                .foregroundColor(Color("G500"))
+                        }.padding(20)
+
+                        VStack(spacing: 0){
+                            ForEach(content.sections) { section in
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text(section.title)
+                                        .font(.F_Bodyoption)
+                                        .foregroundColor(Color("BK"))
+                                    Text(section.body)
+                                        .font(.F_Bodyregular)
+                                        .foregroundColor(Color("BK"))
+                                        .lineSpacing(2)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal,20)
+                                .padding(.vertical, 28)
+                                .background(Color("W"))
+                                .cornerRadius(20)
+                                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 1)
+                                .padding(.bottom, 20)
+                            }
+                        }.padding(.horizontal,20)
+                    }.padding(.bottom, 12)
+
+                    Text("이를 토대로\n목표 습관을 설정할까요?")
+                        .font(.F_Headline)
+                        .foregroundColor(Color("BK"))
+                        .multilineTextAlignment(.center)
+                        .padding(.bottom, 20)
+
+                    AppButton(title: "목표 설정하러 가기", style: .pink, size: .large) {
+                        showGoalSetting = true
+                    }
+                    .padding(.bottom, 20)
+
+                    Button {
+                        onClose()
+                    } label: {
+                        Text("아니요. 다음에 설정할게요.")
+                            .font(.F_Bodyregular)
+                            .foregroundColor(Color("G400"))
+                    }
+                    .padding(.bottom, 20)
+                }
             }
-            .padding(.bottom, 20)
         }
+        .background(Color("P050").ignoresSafeArea())
         .fullScreenCover(isPresented: $showGoalSetting) {
             GoalSettingView(onClose: {
                 showGoalSetting = false
