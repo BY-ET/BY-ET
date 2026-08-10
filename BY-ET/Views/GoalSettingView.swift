@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct GoalSettingView: View {
-    @StateObject private var viewModel = GoalSettingViewModel()
+    @StateObject private var viewModel: GoalSettingViewModel
     let onClose: () -> Void
     var catType: CatType = .type1
     var onStart: () -> Void = {}
@@ -10,74 +10,81 @@ struct GoalSettingView: View {
     @State private var isSettingEnvironment = false
     @AppStorage("nickname") private var nickname: String = ""
 
+    init(onClose: @escaping () -> Void,
+         catType: CatType = .type1,
+         onStart: @escaping () -> Void = {},
+         startStep: Int = 1) {
+        self.onClose = onClose
+        self.catType = catType
+        self.onStart = onStart
+        _viewModel = StateObject(wrappedValue: GoalSettingViewModel(startStep: startStep))
+    }
+
     var body: some View {
-        VStack(spacing: 32) {
-            // 헤더
-            HStack {
-                Button {
-                    if viewModel.isFirstStep {
-                        onClose()
-                    } else {
-                        withAnimation { viewModel.goToPreviousStep() }
+        ZStack{
+            VStack(spacing: 0) {
+                ZStack{
+                    Text("\(nickname)님의 목표 설정")
+                        .font(.F_Navigation)
+                        .foregroundColor(Color("BK"))
+                    HStack (spacing: 0){
+                        Button {
+                            if viewModel.isFirstStep {
+                                onClose()
+                            } else {
+                                withAnimation { viewModel.goToPreviousStep() }
+                            }
+                        } label: {
+                            Image("ic_arrow_left")
+                                .renderingMode(.template)
+                                .foregroundColor(Color("G500"))
+                        }
+                        Spacer()
                     }
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.primary)
+                }.padding(.bottom, 20)
+                    .padding(.horizontal, 20)
+                
+                SegmentedProgressBar(totalSteps: viewModel.totalSteps, currentStep: viewModel.step)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 38)
+                
+                HStack{
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("설정 \(viewModel.step).")
+                            .font(.F_Headline)
+                            .foregroundColor(Color("P400"))
+                        Text(viewModel.questionTitle)
+                            .font(.F_Headline)
+                            .foregroundStyle(Color("BK"))
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer()
+                }.padding(.horizontal, 20)
+                
+                VStack(spacing: 0){
+                    Spacer()
+                    stepContent
+                    Spacer()
                 }
+                .padding(.bottom, 80)
+            }
+            VStack(spacing: 0){
                 Spacer()
-                Text("\(nickname)님의 목표 설정")
-                Spacer()
-            }
-            .frame(height: 24)
-            .padding(.horizontal)
-
-            SegmentedProgressBar(totalSteps: viewModel.totalSteps, currentStep: viewModel.step)
-                .padding(.horizontal)
-
-            // 설정 번호 + 질문
-            VStack(alignment: .leading, spacing: 8) {
-                Text("설정\(viewModel.step)")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(Color("P400"))
-                Text(viewModel.questionTitle)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal)
-
-            // 선택지
-            ScrollView {
-                stepContent
-                    .padding(.horizontal)
-            }
-
-            // 다음 버튼
-            Button {
-                if viewModel.isLastStep {
-                    // TODO: 목표 저장 로직 연결
-                    isSettingEnvironment = true
-                } else {
-                    withAnimation { viewModel.goToNextStep() }
+                // 다음 버튼
+                AppButton(title: viewModel.isLastStep ? "완료" : "다음",
+                          style: viewModel.isNextEnabled ? .pink : .graysoft,
+                          size: .large) {
+                    if viewModel.isLastStep {
+                        isSettingEnvironment = true
+                    } else {
+                        withAnimation { viewModel.goToNextStep() }
+                    }
                 }
-            } label: {
-                Text(viewModel.isLastStep ? "완료" : "다음")
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(viewModel.isNextEnabled ? Color("P400") : Color("G200"))
-                    .foregroundColor(.white)
-                    .cornerRadius(28)
+                .disabled(!viewModel.isNextEnabled)
+                .padding(.bottom, 20)
             }
-            .disabled(!viewModel.isNextEnabled)
-            .padding(.horizontal)
-            .padding(.bottom, 16)
         }
-        .padding(.top, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        
         .background(Color("P050"))
         .animation(.easeInOut, value: viewModel.step)
         .sheet(item: $timeEditing) { editing in
@@ -114,20 +121,10 @@ struct GoalSettingView: View {
     private func optionList(options: [String], selected: String?, onSelect: @escaping (String) -> Void) -> some View {
         VStack(spacing: 16) {
             ForEach(options, id: \.self) { option in
-                Button {
+                AppButton(title: option,
+                          style: selected == option ? .questionSelected : .question,
+                          size: .question) {
                     onSelect(option)
-                } label: {
-                    Text(option)
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .frame(width: 350, height: 56)
-                        .background(selected == option ? Color("P200") : Color("W"))
-                        .foregroundColor(.primary)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 28)
-                                .stroke(selected == option ? Color("P400") : .clear, lineWidth: 2)
-                        )
-                        .cornerRadius(28)
                 }
             }
         }
@@ -135,53 +132,44 @@ struct GoalSettingView: View {
 
     // 설정3: 식사시간
     private var mealTimeContent: some View {
-        VStack(spacing: 16) {
-            // 먹지 않음 체크 버튼 열 상단 라벨
+        VStack(spacing: 0){
             HStack {
                 Spacer()
                 Text("먹지 않음")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
+                    .font(.F_footnotemedium)
+                    .foregroundColor(Color("G500"))
+            }.padding(.bottom, 12)
+            
+            VStack(spacing: 16) {
+                ForEach(viewModel.meals) { meal in
+                    HStack(spacing: 12) {
+                        Text(meal.name)
+                            .font(.F_Bodyoption)
 
-            ForEach(viewModel.meals) { meal in
-                HStack(spacing: 12) {
-                    Text(meal.name)
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .frame(width: 44, alignment: .leading)
+                        AppButton(title: meal.isSkipped ? "먹지 않음" : viewModel.timeText(meal.time),
+                                  style: .question,
+                                  size: .time) {
+                            timeEditing = TimeEditing(
+                                title: "\(meal.name) 식사시간 설정",
+                                initialTime: meal.time,
+                                onSave: { viewModel.updateMealTime(id: meal.id, time: $0) }
+                            )
+                        }
+                        .disabled(meal.isSkipped)
 
-                    Button {
-                        timeEditing = TimeEditing(
-                            title: "\(meal.name) 식사시간 설정",
-                            initialTime: meal.time,
-                            onSave: { viewModel.updateMealTime(id: meal.id, time: $0) }
-                        )
-                    } label: {
-                        Text(meal.isSkipped ? "먹지 않음" : viewModel.timeText(meal.time))
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color("W"))
-                            .foregroundColor(.primary)
-                            .cornerRadius(28)
-                    }
-                    .disabled(meal.isSkipped)
-
-                    Button {
-                        viewModel.toggleMealSkipped(id: meal.id)
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 32, height: 32)
-                            .background(meal.isSkipped ? Color("P400") : Color("G200"))
-                            .clipShape(Circle())
+                        Button {
+                            viewModel.toggleMealSkipped(id: meal.id)
+                        } label: {
+                            Image("ic_select")
+                                .renderingMode(.template)
+                                .foregroundColor(meal.isSkipped ? Color("P400") : Color("G200"))
+                                .background(Color("P050"))
+                                .clipShape(Circle())
+                        }
                     }
                 }
             }
-        }
+        }.padding(.horizontal, 20)
     }
 
     // 설정4: 외출시간
@@ -195,13 +183,14 @@ struct GoalSettingView: View {
     private func outingSection(title: String, keyPath: WritableKeyPath<OutingTime, Date>) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.system(size: 18, weight: .bold))
+                .font(.F_Bodyoption)
+                .foregroundColor(Color("G400"))
 
             ForEach(viewModel.outings) { outing in
                 HStack {
                     Text(outing.label)
-                        .font(.body)
-                        .fontWeight(.medium)
+                        .font(.F_Bodyoption)
+                        .foregroundColor(Color("BK"))
                     Spacer()
                     Button {
                         timeEditing = TimeEditing(
@@ -211,18 +200,17 @@ struct GoalSettingView: View {
                         )
                     } label: {
                         Text(viewModel.timeText(outing[keyPath: keyPath]))
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .frame(width: 270, height: 40)
+                            .font(.F_Bodyoption)
+                            .foregroundColor(Color("BK"))
+                            .frame(width: 303, height: 68)
                             .background(Color("W"))
-                            .foregroundColor(.black)
-                            .cornerRadius(22)
+                            .cornerRadius(34)
                     }
 
                 }
             }
+            .padding(.bottom, 5)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
     }
 }
@@ -246,38 +234,24 @@ private struct TimeWheelSheet: View {
     var body: some View {
         VStack(spacing: 16) {
             Text(title)
-                .font(.headline)
-                .fontWeight(.bold)
-                .padding(.top, 24)
-
-            // 선택된 시간 표시 캡슐
+                .font(.F_Bodyoption)
+                .padding(.top, 16)
+                .padding(.bottom, 20)
             Text(selectedTimeText)
-                .font(.body)
-                .fontWeight(.bold)
-                .padding(.horizontal, 24)
-                .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
-                .background(Color("P050"))
+                .font(.F_Bodybtn)
+                .padding(20)
+                .frame(width: 350, height: 56, alignment: .leading)
+                .background(Color("P100"))
                 .cornerRadius(28)
-                .padding(.horizontal)
+                .padding(.horizontal,20)
 
             KoreanTimeWheelPicker(time: $time)
-                .padding(.horizontal)
+                .padding(.horizontal,20)
 
-            Button {
+            AppButton(title: "다음", style: .pink, size: .large) {
                 onDone(time)
                 dismiss()
-            } label: {
-                Text("설정 완료")
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color("P400"))
-                    .foregroundColor(.white)
-                    .cornerRadius(28)
             }
-            .padding(.horizontal)
-            .padding(.bottom, 20)
         }
         .presentationDetents([.height(500)])
         .presentationDragIndicator(.visible)
@@ -304,7 +278,7 @@ private struct KoreanTimeWheelPicker: View {
     private static let minutes = Array(stride(from: 0, through: 55, by: 5))
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             WheelColumn(items: Self.periods, selection: periodBinding) { $0 }
             WheelColumn(items: Self.hours, selection: hourBinding) { "\($0)" }
             WheelColumn(items: Self.minutes, selection: minuteBinding) { String(format: "%02d", $0) }
@@ -361,24 +335,23 @@ private struct WheelColumn<Item: Hashable>: View {
 
     @State private var scrolledItem: Item?
 
-    private let rowHeight: CGFloat = 52
+    private let rowWidth: CGFloat = 80
+    private let rowHeight: CGFloat = 48
+    private let rowSpacing: CGFloat = 4
     private let visibleRows = 5
 
     var body: some View {
         ScrollView(.vertical) {
-            LazyVStack(spacing: 0) {
+            LazyVStack(spacing: rowSpacing) {
                 ForEach(items, id: \.self) { item in
                     Text(label(item))
-                        .font(.system(size: 22, weight: item == scrolledItem ? .bold : .medium))
-                        .foregroundColor(item == scrolledItem ? Color("P400") : Color(.systemGray3))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: rowHeight)
+                        .font(.F_Navigation)
+                        .foregroundColor(color(for: item))
+                        .frame(width: rowWidth, height: rowHeight)
                         .background {
                             if item == scrolledItem {
-                                RoundedRectangle(cornerRadius: 16)
+                                RoundedRectangle(cornerRadius: 12)
                                     .fill(Color("P050"))
-                                    .padding(.vertical, 3)
-                                    .padding(.horizontal, 6)
                             }
                         }
                         .id(item)
@@ -386,8 +359,9 @@ private struct WheelColumn<Item: Hashable>: View {
             }
             .scrollTargetLayout()
         }
-        .frame(height: rowHeight * CGFloat(visibleRows))
-        .contentMargins(.vertical, rowHeight * CGFloat(visibleRows / 2), for: .scrollContent)
+        .frame(width: rowWidth,
+               height: rowHeight * CGFloat(visibleRows) + rowSpacing * CGFloat(visibleRows - 1))
+        .contentMargins(.vertical, (rowHeight + rowSpacing) * CGFloat(visibleRows / 2), for: .scrollContent)
         .scrollTargetBehavior(.viewAligned)
         .scrollPosition(id: $scrolledItem, anchor: .center)
         .scrollIndicators(.hidden)
@@ -397,6 +371,18 @@ private struct WheelColumn<Item: Hashable>: View {
         }
         .onChange(of: selection) { _, newValue in
             if scrolledItem != newValue { scrolledItem = newValue }
+        }
+    }
+
+    // 가운데 칸 P400, 위아래 한 칸 G200, 그 밖은 G100
+    private func color(for item: Item) -> Color {
+        guard let scrolledItem,
+              let index = items.firstIndex(of: item),
+              let centerIndex = items.firstIndex(of: scrolledItem) else { return Color("G100") }
+        switch abs(index - centerIndex) {
+        case 0: return Color("P400")
+        case 1: return Color("G200")
+        default: return Color("G100")
         }
     }
 }

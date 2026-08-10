@@ -18,6 +18,7 @@ struct AppButton: View {
         case medium    // 134×48, Btnmedium, 아이콘 O
         case small     // 64×40, Btnmedium, 아이콘 X
         case question  // 350×68, Bodyoption, 아이콘 X
+        case time      // 243×68, Bodyoption, 아이콘 X
     }
 
     let title: String
@@ -60,6 +61,7 @@ struct AppButton: View {
         case .medium: return 134
         case .small: return 64
         case .question: return 350
+        case .time: return 243
         }
     }
 
@@ -69,6 +71,7 @@ struct AppButton: View {
         case .medium: return 48
         case .small: return 40
         case .question: return 68
+        case .time: return 68
         }
     }
 
@@ -78,6 +81,7 @@ struct AppButton: View {
         case .medium: return 24
         case .small: return 20
         case .question: return 34
+        case .time: return 34
         }
     }
 
@@ -88,7 +92,7 @@ struct AppButton: View {
     private var titleFont: Font {
         switch size {
         case .large: return .F_Btnlarge
-        case .question: return .F_Bodyoption
+        case .question, .time: return .F_Bodyoption
         default: return .F_Btnmedium
         }
     }

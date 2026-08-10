@@ -14,11 +14,13 @@ final class GoalSettingViewModel: ObservableObject {
     init(habitOptions: [String] = GoalOptionRepository.habitOptions,
          periodOptions: [String] = GoalOptionRepository.periodOptions,
          meals: [MealTime] = GoalOptionRepository.defaultMealTimes,
-         outings: [OutingTime] = GoalOptionRepository.defaultOutingTimes) {
+         outings: [OutingTime] = GoalOptionRepository.defaultOutingTimes,
+         startStep: Int = 1) {
         self.habitOptions = habitOptions
         self.periodOptions = periodOptions
         self.meals = meals
         self.outings = outings
+        self.step = startStep
     }
 
     var progress: Double {

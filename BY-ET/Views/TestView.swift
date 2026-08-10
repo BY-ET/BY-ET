@@ -105,12 +105,6 @@ private struct QuestionPageView: View {
                                   size: .question) {
                             onSelect(option)
                         }
-//                        AppButton(title: "테스트 시작하기",
-//                                  style: isNicknameValid ? .pink : .gray,
-//                                  size: .large) {
-//                            savedNickname = nickname.trimmingCharacters(in: .whitespaces)
-//                            onStart()
-//                        }
                     }
                 }
                 Spacer()
