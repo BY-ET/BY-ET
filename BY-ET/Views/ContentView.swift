@@ -42,17 +42,6 @@ struct ContentView: View {
                 MainTabView()
             }
         }
-        // 테스트용: TestResultsView부터 바로 확인
-//        Group {
-//            if currentScreen == .home {
-//                HomeView()
-//            } else {
-//                TestResultsView(viewModel: testViewModel, onClose: {
-//                    currentScreen = .home
-//                })
-//            }
-//        }
-//        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

@@ -7,8 +7,8 @@ struct AppButton: View {
         case pinkText   // 2번 - 바탕 W, 내용 P400
         case pink       // 3번 - 바탕 P400, 내용 W
         case pinkOutline // 4번 - 바탕 W, stroke P400(weight 2), 내용 P400
-        case green      // 5번 - 바탕 G300, 내용 W
-        case greenSoft  // 6번 - 바탕 G200, 내용 G100
+        case gray      // 5번 - 바탕 G300, 내용 W
+        case graysoft  // 6번 - 바탕 G200, 내용 G100
     }
 
     enum Size {
@@ -90,8 +90,8 @@ struct AppButton: View {
         case .pinkText:    return Color("W")
         case .pink:        return Color("P400")
         case .pinkOutline: return Color("W")
-        case .green:       return Color("G300")
-        case .greenSoft:   return Color("G200")
+        case .gray:       return Color("G300")
+        case .graysoft:   return Color("G200")
         }
     }
 
@@ -101,8 +101,8 @@ struct AppButton: View {
         case .pinkText:    return Color("P400")
         case .pink:        return Color("W")
         case .pinkOutline: return Color("P400")
-        case .green:       return Color("W")
-        case .greenSoft:   return Color("G100")
+        case .gray:       return Color("W")
+        case .graysoft:   return Color("G100")
         }
     }
 
@@ -126,7 +126,7 @@ struct AppButton: View {
 #Preview {
     ScrollView {
         VStack(spacing: 16) {
-            ForEach([AppButton.Style.red, .pinkText, .pink, .pinkOutline, .green, .greenSoft], id: \.self) { style in
+            ForEach([AppButton.Style.red, .pinkText, .pink, .pinkOutline, .gray, .graysoft], id: \.self) { style in
                 HStack(spacing: 12) {
                     AppButton(title: "Btn", icon: "ic_shop", style: style, size: .medium) {}
                     AppButton(title: "Btn", style: style, size: .small) {}
