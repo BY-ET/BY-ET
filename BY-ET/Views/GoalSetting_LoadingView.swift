@@ -53,6 +53,7 @@ struct GoalSetting_LoadingView: View {
             .disabled(!isFinished)
         }
         .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity)
         .background(Color("P050").ignoresSafeArea())
         .onAppear {
             withAnimation(.linear(duration: 4)) {

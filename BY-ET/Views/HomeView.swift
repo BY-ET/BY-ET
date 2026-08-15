@@ -75,17 +75,17 @@ struct HomeView: View {
     private var weeklyGoalCard: some View {
         VStack(spacing: 8) {
             Text("\(weekNumber)주차 목표")
-                .font(.body)
-                .fontWeight(.semibold)
+                .font(.F_Bodymedium)
+                .foregroundColor(Color("BK"))
+            
             Text(weeklyGoalMessage)
-                .font(.body)
-                .fontWeight(.bold)
+                .font(.F_Title)
                 .foregroundColor(Color("P400"))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .background(Color("W"))
-        .cornerRadius(16)
+        .cornerRadius(20)
     }
 
     // MARK: - 모은 별 + 고양이 유형
