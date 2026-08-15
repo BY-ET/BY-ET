@@ -21,6 +21,9 @@ final class TestViewModel: ObservableObject {
     var isLastQuestion: Bool {
         currentIndex == questions.count - 1
     }
+    var totalQuestions: Int {
+        questions.count
+    }
     var canGoBack: Bool {
         currentIndex > 0
     }
@@ -34,7 +37,14 @@ final class TestViewModel: ObservableObject {
         selectedOptionForCurrentQuestion = option
 
         if !isLastQuestion {
-            goToNextQuestion()
+            // 선택 상태(P200/P400)를 잠시 보여준 뒤 다음 질문으로 이동
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                // 지연 중 뒤로가기 등으로 질문이 바뀌었으면 이동하지 않음
+                guard currentQuestion?.id == question.id,
+                      selectedOptionForCurrentQuestion == option else { return }
+                goToNextQuestion()
+            }
         }
     }
 
@@ -43,6 +53,7 @@ final class TestViewModel: ObservableObject {
             let result = SurveyResultCalculator.calculate(from: answers)
             catType = result.catType
             categoryJudgements = result.judgements
+            UserDefaults.standard.set(result.catType.rawValue, forKey: "catTypeRaw")
 
             currentQuestion = nil
             isFinished = true

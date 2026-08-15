@@ -7,7 +7,8 @@ enum MainTab {
 }
 
 struct MainTabView: View {
-    var catType: CatType = .type4
+    @AppStorage("catTypeRaw") private var catTypeRaw: String = CatType.type4.rawValue
+    private var catType: CatType { CatType(rawValue: catTypeRaw) ?? .type4 }
 
     @State private var selectedTab: MainTab = .home
     @State private var showGoalAlert = false
@@ -16,13 +17,11 @@ struct MainTabView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // 탭을 전환해도 각 뷰의 상태(카드 뒤집힘/완료 등)가 유지되도록
-            // 뷰를 제거하지 않고 opacity로만 전환
             ZStack {
                 RutineView()
                     .opacity(selectedTab == .rutine ? 1 : 0)
                     .allowsHitTesting(selectedTab == .rutine)
-                HomeView(catType: catType)
+                HomeView()
                     .opacity(selectedTab == .home ? 1 : 0)
                     .allowsHitTesting(selectedTab == .home)
                 MyCatView()
@@ -56,31 +55,39 @@ struct MainTabView: View {
 
     private var tabBar: some View {
         HStack {
-            tabButton(.rutine, icon: "flame")
-            tabButton(.home, icon: "house.fill")
-            tabButton(.myCat, icon: "cat.fill")
+            tabButton(.rutine, icon: "ic_rutin")
+            tabButton(.home, icon: "ic_home")
+            tabButton(.myCat, icon: "ic_mycat")
         }
-        .padding(.top, 16)
-        .background(Color("W").ignoresSafeArea(edges: .bottom))
+        .padding(.top, 12)
+        .padding(.horizontal, 20)
+        .background(
+            UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20)
+                .fill(Color("W"))
+                .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: -2)
+                .ignoresSafeArea(edges: .bottom)
+        )
     }
 
     private func tabButton(_ tab: MainTab, icon: String) -> some View {
         Button {
-            // 목표 미설정 시 루틴 탭 진입을 막고 알림 표시
             if tab == .rutine && !hasGoal {
                 showGoalAlert = true
             } else {
                 selectedTab = tab
             }
         } label: {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(selectedTab == tab ? Color("P400") : Color("G300"))
+            Image(icon)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 32, height: 32)
+                .foregroundColor(selectedTab == tab ? Color("P400") : Color("G200"))
                 .frame(maxWidth: .infinity)
         }
     }
 }
 
 #Preview {
-    MainTabView(catType: .type4)
+    MainTabView()
 }

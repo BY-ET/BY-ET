@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct HomeView: View {
-    var catType: CatType = .type4
+    @AppStorage("catTypeRaw") private var catTypeRaw: String = CatType.type4.rawValue
+    private var catType: CatType { CatType(rawValue: catTypeRaw) ?? .type4 }
 
     @AppStorage("nickname") private var nickname: String = ""
     @AppStorage("hasGoal") private var hasGoal: Bool = false
@@ -36,14 +37,18 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 0) {
                 if hasGoal {
                     weeklyGoalCard
+                        .padding(.bottom,20)
                 }
                 starAndTypeRow
+                    .padding(.bottom,20)
                 catImageCard
+                    .padding(.bottom,20)
                 if !hasGoal {
                     goalSettingButton
+                        .padding(.bottom,14)
                 }
                 progressSection
             }
@@ -70,48 +75,53 @@ struct HomeView: View {
     private var weeklyGoalCard: some View {
         VStack(spacing: 8) {
             Text("\(weekNumber)주차 목표")
-                .font(.body)
-                .fontWeight(.semibold)
+                .font(.F_Bodymedium)
+                .foregroundColor(Color("BK"))
+            
             Text(weeklyGoalMessage)
-                .font(.body)
-                .fontWeight(.bold)
+                .font(.F_Title)
                 .foregroundColor(Color("P400"))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .background(Color("W"))
-        .cornerRadius(16)
+        .cornerRadius(20)
     }
 
     // MARK: - 모은 별 + 고양이 유형
 
     private var starAndTypeRow: some View {
         HStack(alignment: .center) {
-            HStack(spacing: 12) {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 26))
+            HStack(spacing: 8) {
+                Image("ic_star")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 40, height: 40)
                     .foregroundColor(Color("P400"))
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("내가 모은 별")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
+                        .font(.F_footnoteregular)
+                        .foregroundColor(Color("G400"))
                     Text("\(starCount)개")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.F_Bodybtn)
                         .foregroundColor(Color("P400"))
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 11)
             .background(Color("W"))
-            .cornerRadius(16)
+            .cornerRadius(12)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
                 Text("\(nickname) 님은")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.F_footnoteregular)
+                    .foregroundColor(Color("G400"))
                 Text(catType.rawValue)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.F_Title)
+                    .foregroundColor(Color("BK"))
             }
         }
     }
@@ -122,10 +132,7 @@ struct HomeView: View {
         Image(CatTypeRepository.content(for: catType).imageName)
             .resizable()
             .scaledToFit()
-            .padding(24)
-            .frame(maxWidth: .infinity)
-            .background(Color("W"))
-            .cornerRadius(24)
+            .frame(width: 280, height: 280)
     }
 
     // MARK: - 목표 설정 유도 버튼 (목표 미설정 시)
@@ -134,20 +141,15 @@ struct HomeView: View {
         Button {
             isGoalSetting = true
         } label: {
-            VStack {
-                Text("아직 목표가 없어요!")
-                    .font(.system(size: 16))
-                Text("목표를 설정하러 가볼까요?")
-                    .font(.system(size: 16))
-                HStack(spacing: 2) {
-                    Text("목표 설정하러 가기")
-                        .font(.system(size: 20, weight: .bold))
-                    Image(systemName: "chevron.right")
-                }
-                .font(.system(size: 13, weight: .medium))
+            VStack(spacing: 8){
+                Text("아직 목표가 없어요!\n목표를 설정하러 가볼까요?")
+                    .font(.F_Bodymedium)
+                    .foregroundColor(Color("P100"))
+                    Text("목표 설정하러 가기 >")
+                        .font(.F_Btnlarge)
             }
             .foregroundColor(.white)
-            .frame(width: 350, height: 106)
+            .frame(width: 350, height: 112)
             .background(Color("P400"))
             .cornerRadius(20)
         }
@@ -156,25 +158,27 @@ struct HomeView: View {
     // MARK: - 이번 주 습관 달성률
 
     private var progressSection: some View {
-        // 목표 미설정 시 달성률은 0%로 표시
         let progress = hasGoal ? displayedWeeklyProgress : 0
-        // 70% 이상 달성 시 핑크색으로 강조
         let progressColor = progress >= 0.7 ? Color("P400") : Color("B300")
 
         return VStack(spacing: 12) {
-            HStack {
+            HStack(spacing: 0){
                 Text("이번 주 습관 달성률")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.F_Title)
+                    .foregroundColor(Color("BK"))
                 Spacer()
                 Text("\(Int((progress * 100).rounded()))%")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.F_Bodyoption)
                     .foregroundColor(progressColor)
             }
-            CustomProgressBar(progress: progress, trackColor: Color("P050"), fillColor: progressColor, width: 310)
+            .padding(.horizontal,20)
+            CustomProgressBar(progress: progress, trackColor: Color("P050"), fillColor: progressColor, width: 326, height: 20)
 
             dailyProgressRow
+                .padding(.horizontal,12)
         }
-        .padding(20)
+        .padding(.top, 20)
+        .padding(.bottom, 12)
         .frame(maxWidth: .infinity)
         .background(Color("W"))
         .cornerRadius(20)
@@ -188,8 +192,8 @@ struct HomeView: View {
             ForEach(Array(Self.dayLabels.enumerated()), id: \.offset) { index, day in
                 VStack(spacing: 10) {
                     Text(day)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
+                        .font(.F_caption)
+                        .foregroundColor(Color("G500"))
                     dayCircle(count: hasGoal ? dailyCounts[index] : 0)
                 }
                 .frame(maxWidth: .infinity)
@@ -198,47 +202,34 @@ struct HomeView: View {
         .padding(.top, 8)
     }
 
-    // 요일별 달성 아이콘: 원을 삼등분해서 습관 1개 완료마다 한 칸씩 채움 (12시 방향부터 시계방향)
+    // 요일별 달성 아이콘: 완료 개수에 따라 아이콘 표시 (1개: 1/3, 2개: 2/3, 3개: 꽉 찬 원)
+    @ViewBuilder
     private func dayCircle(count: Int) -> some View {
-        ZStack {
-            Circle()
-                .fill(Color("W"))
-            ForEach(0..<count, id: \.self) { index in
-                PieSegment(
-                    startAngle: .degrees(-90 + Double(index) * 120),
-                    endAngle: .degrees(-90 + Double(index + 1) * 120)
-                )
-                .fill(Color("P400"))
+        Group {
+            switch count {
+            case 1:
+                Image("ic_one_third")
+                    .resizable()
+                    .scaledToFit()
+            case 2:
+                Image("ic_two_third")
+                    .resizable()
+                    .scaledToFit()
+            case 3:
+                Image("ic_circle")
+                    .resizable()
+                    .scaledToFit()
+            default:
+                Circle()
+                    .fill(Color("W"))
+                    .overlay(Circle().stroke(Color("G200"), lineWidth: 1.5))
             }
-            Circle()
-                .stroke(count >= HabitProgressStore.cardsPerDay ? Color("P400") : Color("G200"), lineWidth: 1.5)
         }
         .frame(width: 24, height: 24)
     }
 
 }
 
-// 원의 중심에서 시작하는 부채꼴 조각 (요일별 달성 아이콘용)
-struct PieSegment: Shape {
-    let startAngle: Angle
-    let endAngle: Angle
-
-    func path(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        var path = Path()
-        path.move(to: center)
-        path.addArc(
-            center: center,
-            radius: min(rect.width, rect.height) / 2,
-            startAngle: startAngle,
-            endAngle: endAngle,
-            clockwise: false
-        )
-        path.closeSubpath()
-        return path
-    }
-}
-
 #Preview {
-    HomeView(catType: .type4)
+    HomeView()
 }
