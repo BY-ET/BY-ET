@@ -91,7 +91,7 @@ struct HomeView: View {
     // MARK: - 모은 별 + 고양이 유형
 
     private var starAndTypeRow: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .center,spacing:0) {
             HStack(spacing: 8) {
                 Image("ic_star")
                     .renderingMode(.template)
@@ -108,7 +108,8 @@ struct HomeView: View {
                         .foregroundColor(Color("P400"))
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.trailing, 16)
+            .padding(.leading, 12)
             .padding(.vertical, 11)
             .background(Color("W"))
             .cornerRadius(12)
@@ -190,7 +191,7 @@ struct HomeView: View {
     private var dailyProgressRow: some View {
         HStack {
             ForEach(Array(Self.dayLabels.enumerated()), id: \.offset) { index, day in
-                VStack(spacing: 10) {
+                VStack(spacing: 4) {
                     Text(day)
                         .font(.F_caption)
                         .foregroundColor(Color("G500"))
@@ -209,20 +210,26 @@ struct HomeView: View {
             switch count {
             case 1:
                 Image("ic_one_third")
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
+                    .foregroundColor(Color("P200"))
             case 2:
                 Image("ic_two_third")
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
+                    .foregroundColor(Color("P300"))
             case 3:
                 Image("ic_circle")
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
+                    .foregroundColor(Color("P400"))
             default:
                 Circle()
                     .fill(Color("W"))
-                    .overlay(Circle().stroke(Color("G200"), lineWidth: 1.5))
+                    .overlay(Circle().stroke(Color("G100"), lineWidth: 1.5))
             }
         }
         .frame(width: 24, height: 24)

@@ -171,20 +171,18 @@ struct HabitCardView: View {
                 .padding(.top, 16)
 
             habitImage
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
                 .overlay(alignment: .bottomTrailing) {
                     if isCompleted {
                         Image("rutine_done")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 120)
-                            .transition(.scale(scale: 1.6).combined(with: .opacity))
-                            .padding(.trailing, 24)
                     }
-                }.padding(.bottom, 16)
+                }
 
             completeButton
+                .padding(.top,12)
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("W"))
@@ -232,6 +230,7 @@ struct HabitCardView: View {
         dailyCountsRaw = HabitProgressStore.encodeDailyCounts(dailyCounts)
     }
 
+    // 앞면과 동일하게 컨테이너 크기를 그대로 채움
     private var cardBack: some View {
         Color.clear
             .overlay(
@@ -245,15 +244,4 @@ struct HabitCardView: View {
 
 #Preview {
     RutineView()
-}
-
-#Preview("카드 앞면") {
-    HabitCardView(
-        habit: Habit(id: 0, code: "X01", title: "운동", iconName: "ic_운동", text: "배달 완료 전,\n스쿼트 10개", imageName: "rutine_exercise_1"),
-        isFlipped: .constant(true),
-        isCompleted: .constant(true)
-    )
-    .frame(width: 300, height: 490)
-    .padding()
-    .background(Color("P050"))
 }

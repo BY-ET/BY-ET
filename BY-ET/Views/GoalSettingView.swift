@@ -121,7 +121,7 @@ struct GoalSettingView: View {
 
     // 설정1, 설정2 공용 선택지 버튼 목록
     private func optionList(options: [String], selected: String?, onSelect: @escaping (String) -> Void) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 8) {
             ForEach(options, id: \.self) { option in
                 AppButton(title: option,
                           style: selected == option ? .questionSelected : .question,
@@ -142,7 +142,7 @@ struct GoalSettingView: View {
                     .foregroundColor(Color("G500"))
             }.padding(.bottom, 12)
             
-            VStack(spacing: 16) {
+            VStack(spacing: 32) {
                 ForEach(viewModel.meals) { meal in
                     HStack(spacing: 12) {
                         Text(meal.name)
@@ -391,4 +391,8 @@ private struct WheelColumn<Item: Hashable>: View {
 
 #Preview {
     GoalSettingView(onClose: {})
+}
+
+#Preview("설정 3") {
+    GoalSettingView(onClose: {}, startStep: 3)
 }

@@ -38,7 +38,7 @@ struct QuestionRepository {
             category: .exercise,
             options: [
                 QuestionOption(id: "Q1_A", text: "운동이나 산책을 하거나, 약속에 간다.", value: "active", score: 1),
-                QuestionOption(id: "Q1_B", text: "침대에서 드르마를 보거나,\n 늦잠을 자며 푹 쉰다.", value: "rest", score: 0)
+                QuestionOption(id: "Q1_B", text: "침대에서 드라마를 보거나,\n 늦잠을 자며 푹 쉰다.", value: "rest", score: 0)
             ]
         ),
         Question(id: "Q2", order: 2,
@@ -46,7 +46,7 @@ struct QuestionRepository {
             category: .exercise,
             options: [
                 QuestionOption(id: "Q2_A", text: "건강을 생각해 웬만하면 계단을 이용한다.", value: "stairs", score: 1),
-                QuestionOption(id: "Q2_B", text: "무조건 엘리베이터를 기다린다", value: "elevator", score: 0)
+                QuestionOption(id: "Q2_B", text: "무조건 엘리베이터를 기다린다.", value: "elevator", score: 0)
             ]
         ),
         Question(id: "Q3", order: 3,
