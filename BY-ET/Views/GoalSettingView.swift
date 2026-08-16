@@ -75,6 +75,8 @@ struct GoalSettingView: View {
                           style: viewModel.isNextEnabled ? .pink : .graysoft,
                           size: .large) {
                     if viewModel.isLastStep {
+                        // 유형+목표+기간+시간 프로필 저장 (매칭 엔진이 이 프로필로 습관 선택)
+                        HabitStore.saveProfile(viewModel.makeProfile(catType: catType))
                         isSettingEnvironment = true
                     } else {
                         withAnimation { viewModel.goToNextStep() }

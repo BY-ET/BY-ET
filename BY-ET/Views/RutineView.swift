@@ -209,6 +209,8 @@ struct HabitCardView: View {
             }
             starCount += 1
             updateWeeklyProgress()
+            // completion_logs에 완료 기록 (주차 전환 시 난이도 재계산의 근거)
+            HabitStore.log(code: habit.code, dateID: HabitProgressStore.todayID(), status: .completed)
         }
         .disabled(isCompleted)
     }
@@ -247,7 +249,7 @@ struct HabitCardView: View {
 
 #Preview("카드 앞면") {
     HabitCardView(
-        habit: Habit(id: 0, title: "운동", iconName: "ic_운동", text: "배달 완료 전,\n스쿼트 10개", imageName: "rutine_exercise_1"),
+        habit: Habit(id: 0, code: "X01", title: "운동", iconName: "ic_운동", text: "배달 완료 전,\n스쿼트 10개", imageName: "rutine_exercise_1"),
         isFlipped: .constant(true),
         isCompleted: .constant(true)
     )
