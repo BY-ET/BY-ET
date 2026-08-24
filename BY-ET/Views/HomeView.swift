@@ -83,6 +83,8 @@ struct HomeView: View {
                         .padding(.bottom,14)
                 }
                 progressSection
+                resetButton
+                    .padding(.top, 20)
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -187,6 +189,33 @@ struct HomeView: View {
             .frame(width: 350, height: 112)
             .background(Color("P400"))
             .cornerRadius(20)
+        }
+    }
+
+    // MARK: - ⚠️ 임시 테스트용 전체 초기화 버튼
+
+    private var resetButton: some View {
+        Button {
+            resetAllData()
+        } label: {
+            Text("전체 초기화 (닉네임부터 다시)")
+                .font(.F_footnotemedium)
+                .foregroundColor(Color("G400"))
+        }
+    }
+
+    // 모든 저장 데이터를 지워 온보딩(닉네임 설정)부터 다시 시작
+    // hasCompletedSetup이 false가 되면 ContentView가 온보딩 화면으로 전환한다
+    private func resetAllData() {
+        let keys = [
+            "nickname", "hasCompletedSetup", "hasGoal", "catTypeRaw",
+            "starCount", "weeklyProgress", "weeklyCompletedCount",
+            "dailyCompletedCounts", "weeklyProgressWeekID",
+            "dailyCardStateDate", "dailyFlipped", "dailyCompleted",
+            "habitUserProfile", "habitDailyAssignments", "habitCompletionLogs"
+        ]
+        for key in keys {
+            UserDefaults.standard.removeObject(forKey: key)
         }
     }
 
