@@ -212,7 +212,8 @@ struct HomeView: View {
             "starCount", "weeklyProgress", "weeklyCompletedCount",
             "dailyCompletedCounts", "weeklyProgressWeekID",
             "dailyCardStateDate", "dailyFlipped", "dailyCompleted",
-            "habitUserProfile", "habitDailyAssignments", "habitCompletionLogs"
+            "habitUserProfile", "habitDailyAssignments", "habitCompletionLogs",
+            "confettiShownDate"
         ]
         for key in keys {
             UserDefaults.standard.removeObject(forKey: key)

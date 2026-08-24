@@ -1,4 +1,5 @@
 import SwiftUI
+import Lottie
 
 struct RutineView: View {
     @Environment(\.scenePhase) private var scenePhase
@@ -9,6 +10,10 @@ struct RutineView: View {
     @State private var currentIndex: Int? = 0
     @State private var flipped: [Bool] = [false, false, false]
     @State private var completed: [Bool] = [false, false, false]
+
+    // 하루 3개를 모두 완료한 순간 컨페티를 하루에 한 번만 재생
+    @AppStorage("confettiShownDate") private var confettiShownDate: String = ""
+    @State private var showConfetti = false
 
     // 카드 상태를 날짜별로 유지 (날짜가 바뀌면 리셋, 앱을 껐다 켜도 오늘 상태 유지)
     @AppStorage("dailyCardStateDate") private var cardStateDate: String = ""
@@ -51,7 +56,38 @@ struct RutineView: View {
         }
         .onChange(of: completed) {
             completedRaw = HabitProgressStore.encodeFlags(completed)
+            celebrateIfAllCompleted()
         }
+        .overlay {
+            if showConfetti {
+                // 고양이 위로 컨페티가 터지도록 겹쳐서 화면 가로 꽉 차게 중앙 배치
+                ZStack {
+                    LottieView(animation: .named("goal_cat"))
+                        .playing(loopMode: .playOnce)
+                        .resizable()
+                        .aspectRatio(3.0 / 2.0, contentMode: .fit)
+
+                    LottieView(animation: .named("confetti"))
+                        .playing(loopMode: .playOnce)
+                        .resizable()
+                        // 컨페티(3초)가 더 길어서 끝나는 시점에 둘 다 사라짐
+                        .animationDidFinish { _ in
+                            showConfetti = false
+                        }
+                        .aspectRatio(1, contentMode: .fit)
+                }
+                .frame(maxWidth: .infinity)
+                .allowsHitTesting(false)
+            }
+        }
+    }
+
+    // 오늘의 습관 3개를 모두 완료한 순간 컨페티 재생 (앱 재실행 시 중복 재생 방지)
+    private func celebrateIfAllCompleted() {
+        guard completed.allSatisfy({ $0 }),
+              confettiShownDate != HabitProgressStore.todayID() else { return }
+        confettiShownDate = HabitProgressStore.todayID()
+        showConfetti = true
     }
 
     // 날짜가 바뀌었으면 오늘의 새 카드로 교체하고 상태 리셋, 같은 날이면 저장된 상태 복원

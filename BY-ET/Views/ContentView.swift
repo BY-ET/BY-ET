@@ -15,14 +15,12 @@ struct ContentView: View {
     // ⚠️ 임시 확인용: true면 앱 실행 시 유형 선택 → 목표설정 → 습관카드만 바로 확인할 수 있음
     // 확인이 끝나면 false로 되돌리면 원래 플로우(온보딩 → 테스트 → 홈)로 복구됨
     private let showGoalAndRutineOnly = false
-    // isPresented 방식은 유형 선택과 같은 프레임에 열리면 이전 유형이 전달될 수 있어 item 방식 사용
     @State private var goalSettingType: CatType?
     @State private var showRutine = false
     @AppStorage("catTypeRaw") private var catTypeRaw: String = CatType.type4.rawValue
 
     @AppStorage("hasCompletedSetup") private var hasCompletedSetup: Bool = false
     @State private var currentScreen: AppScreen
-    // 테스트용: 결과 화면에 넣어줄 뷰모델 (catType 미설정 시 type1로 표시됨)
     @StateObject private var testViewModel = TestViewModel()
     @AppStorage("hasGoal") private var hasGoal: Bool = false
     @AppStorage("starCount") private var starCount: Int = 0
@@ -46,7 +44,6 @@ struct ContentView: View {
     private var goalAndRutineOnlyFlow: some View {
         ZStack {
             if showRutine {
-                // 목표설정이 끝난 뒤에 생성해야 새 프로필 기준으로 카드가 뽑힘
                 RutineView()
                     .overlay(alignment: .topTrailing) {
                         Button("유형 다시 선택") { showRutine = false }
@@ -64,7 +61,6 @@ struct ContentView: View {
                 onClose: { goalSettingType = nil },
                 catType: type,
                 onStart: {
-                    // 방금 설정한 유형·목표 기준으로 오늘 카드를 다시 뽑도록 기존 배정·카드상태 초기화
                     UserDefaults.standard.removeObject(forKey: "habitDailyAssignments")
                     UserDefaults.standard.set("", forKey: "dailyCardStateDate")
                     showRutine = true
@@ -74,7 +70,6 @@ struct ContentView: View {
         }
     }
 
-    // 임시 확인용: 고양이 유형 선택 (선택하면 바로 목표설정으로 이동)
     private var catTypePicker: some View {
         ScrollView {
             VStack(spacing: 12) {
@@ -134,7 +129,6 @@ struct ContentView: View {
                 MainTabView()
             }
         }
-        // 홈의 임시 초기화 버튼 등으로 셋업 기록이 지워지면 온보딩부터 다시 시작
         .onChange(of: hasCompletedSetup) { _, completed in
             if !completed { currentScreen = .onboarding }
         }
