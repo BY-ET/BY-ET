@@ -286,8 +286,8 @@ private struct KoreanTimeWheelPicker: View {
     var body: some View {
         HStack(spacing: 8) {
             WheelColumn(items: Self.periods, selection: periodBinding) { $0 }
-            WheelColumn(items: Self.hours, selection: hourBinding) { "\($0)" }
-            WheelColumn(items: Self.minutes, selection: minuteBinding) { String(format: "%02d", $0) }
+            WheelColumn(items: Self.hours, selection: hourBinding, loops: true) { "\($0)" }
+            WheelColumn(items: Self.minutes, selection: minuteBinding, loops: true) { String(format: "%02d", $0) }
         }
     }
 
@@ -334,33 +334,40 @@ private struct KoreanTimeWheelPicker: View {
 }
 
 // 한 열짜리 스냅 휠. 가운데로 스냅된 항목에 분홍 캡슐 하이라이트를 그린다.
+// loops가 true면 항목을 여러 블록 반복 배치하고, 스크롤이 멈출 때마다 가운데 블록의
+// 같은 항목으로 소리 없이 복귀시켜 무한 스크롤처럼 동작한다.
 private struct WheelColumn<Item: Hashable>: View {
     let items: [Item]
     @Binding var selection: Item
+    var loops: Bool = false
     let label: (Item) -> String
 
-    @State private var scrolledItem: Item?
+    @State private var scrolledIndex: Int?
 
     private let rowWidth: CGFloat = 80
     private let rowHeight: CGFloat = 48
     private let rowSpacing: CGFloat = 4
     private let visibleRows = 5
 
+    // 반복 블록 수 (홀수로 두고 가운데 블록에서 시작)
+    private var repetitions: Int { loops ? 101 : 1 }
+    private var centerBase: Int { items.count * (repetitions / 2) }
+
     var body: some View {
         ScrollView(.vertical) {
             LazyVStack(spacing: rowSpacing) {
-                ForEach(items, id: \.self) { item in
-                    Text(label(item))
+                ForEach(0..<(items.count * repetitions), id: \.self) { index in
+                    Text(label(items[index % items.count]))
                         .font(.F_Navigation)
-                        .foregroundColor(color(for: item))
+                        .foregroundColor(color(for: index))
                         .frame(width: rowWidth, height: rowHeight)
                         .background {
-                            if item == scrolledItem {
+                            if index == scrolledIndex {
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(Color("P050"))
                             }
                         }
-                        .id(item)
+                        .id(index)
                 }
             }
             .scrollTargetLayout()
@@ -369,23 +376,32 @@ private struct WheelColumn<Item: Hashable>: View {
                height: rowHeight * CGFloat(visibleRows) + rowSpacing * CGFloat(visibleRows - 1))
         .contentMargins(.vertical, (rowHeight + rowSpacing) * CGFloat(visibleRows / 2), for: .scrollContent)
         .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $scrolledItem, anchor: .center)
+        .scrollPosition(id: $scrolledIndex, anchor: .center)
         .scrollIndicators(.hidden)
-        .onAppear { scrolledItem = selection }
-        .onChange(of: scrolledItem) { _, newValue in
-            if let newValue, newValue != selection { selection = newValue }
+        .onAppear {
+            scrolledIndex = centerBase + (items.firstIndex(of: selection) ?? 0)
+        }
+        .onChange(of: scrolledIndex) { _, newValue in
+            guard let newValue else { return }
+            let item = items[newValue % items.count]
+            if item != selection { selection = item }
         }
         .onChange(of: selection) { _, newValue in
-            if scrolledItem != newValue { scrolledItem = newValue }
+            guard let current = scrolledIndex, items[current % items.count] != newValue else { return }
+            scrolledIndex = (current / items.count) * items.count + (items.firstIndex(of: newValue) ?? 0)
+        }
+        .onScrollPhaseChange { _, newPhase in
+            // 멈추면 가운데 블록으로 복귀 (같은 항목 위치라 화면상 변화 없음)
+            guard loops, newPhase == .idle, let current = scrolledIndex else { return }
+            let centered = centerBase + (current % items.count)
+            if centered != current { scrolledIndex = centered }
         }
     }
 
     // 가운데 칸 P400, 위아래 한 칸 G200, 그 밖은 G100
-    private func color(for item: Item) -> Color {
-        guard let scrolledItem,
-              let index = items.firstIndex(of: item),
-              let centerIndex = items.firstIndex(of: scrolledItem) else { return Color("G100") }
-        switch abs(index - centerIndex) {
+    private func color(for index: Int) -> Color {
+        guard let scrolledIndex else { return Color("G100") }
+        switch abs(index - scrolledIndex) {
         case 0: return Color("P400")
         case 1: return Color("G200")
         default: return Color("G100")
