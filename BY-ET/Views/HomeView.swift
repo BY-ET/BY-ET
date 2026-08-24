@@ -16,9 +16,41 @@ struct HomeView: View {
     @AppStorage("dailyCompletedCounts") private var dailyCountsRaw: String = "0,0,0,0,0,0,0"
     @AppStorage("weeklyProgressWeekID") private var weekID: String = ""
 
-    // TODO: 실제 데이터 연동 전 임시 값
-    @State private var weekNumber = 1
-    @State private var weeklyGoalMessage = "시작이 반이다. 일단은 해보자!"
+    // 목표 프로필(기간·시작일) 기준 현재 주차와 주차별 응원 문구
+    private var profile: HabitUserProfile { HabitStore.profile ?? .fallback() }
+    private var weekNumber: Int { profile.week() }
+    private var weeklyGoalMessage: String {
+        Self.goalMessage(totalWeeks: profile.totalWeeks, week: weekNumber)
+    }
+
+    // 플랜(2주: 단기 집중형 / 4주: 습관 형성형 / 6주: 장기 변화형)별 주차 문구
+    private static func goalMessage(totalWeeks: Int, week: Int) -> String {
+        let messages: [String]
+        switch totalWeeks {
+        case 2:
+            messages = [
+                "시작이 반이다. 일단은 해보자!",
+                "완주가 코앞이야! 마지막 땀방울까지 텐션 올리고 가보자!"
+            ]
+        case 4:
+            messages = [
+                "시작이 반이다. 일단은 해보자!",
+                "조금씩 몸이 기억하기 시작했어! 지금의 페이스를 유지해!",
+                "포기하고 싶은 고비야. 여기만 넘기면 진짜 내 습관이 돼!",
+                "마침내 마지막 주! 거침없이 달려서 멋진 완주를 이뤄내자!"
+            ]
+        default: // 6주
+            messages = [
+                "시작이 반이다. 일단은 해보자!",
+                "아직은 낯설어도 괜찮아. 멈추지 않고 계속하는 게 중요해!",
+                "벌써 3주 차! 매일의 작은 노력이 단단한 너를 만들고 있어!",
+                "드디어 반환점 돌파! 이제는 관성이 널 앞으로 이끌어줄 거야!",
+                "고지가 눈앞에 보여! 지금까지 달려온 너의 열정을 믿어봐!",
+                "대망의 파이널! 완벽한 마무리를 향해 전력 질주해 보자!"
+            ]
+        }
+        return messages[min(max(week, 1), messages.count) - 1]
+    }
 
     private static let dayLabels = ["일", "월", "화", "수", "목", "금", "토"]
 
@@ -81,6 +113,8 @@ struct HomeView: View {
             Text(weeklyGoalMessage)
                 .font(.F_Title)
                 .foregroundColor(Color("P400"))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
