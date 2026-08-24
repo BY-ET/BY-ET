@@ -75,6 +75,8 @@ struct GoalSettingView: View {
                           style: viewModel.isNextEnabled ? .pink : .graysoft,
                           size: .large) {
                     if viewModel.isLastStep {
+                        // 유형+목표+기간+시간 프로필 저장 (매칭 엔진이 이 프로필로 습관 선택)
+                        HabitStore.saveProfile(viewModel.makeProfile(catType: catType))
                         isSettingEnvironment = true
                     } else {
                         withAnimation { viewModel.goToNextStep() }
@@ -119,7 +121,7 @@ struct GoalSettingView: View {
 
     // 설정1, 설정2 공용 선택지 버튼 목록
     private func optionList(options: [String], selected: String?, onSelect: @escaping (String) -> Void) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 8) {
             ForEach(options, id: \.self) { option in
                 AppButton(title: option,
                           style: selected == option ? .questionSelected : .question,
@@ -140,7 +142,7 @@ struct GoalSettingView: View {
                     .foregroundColor(Color("G500"))
             }.padding(.bottom, 12)
             
-            VStack(spacing: 16) {
+            VStack(spacing: 32) {
                 ForEach(viewModel.meals) { meal in
                     HStack(spacing: 12) {
                         Text(meal.name)
@@ -172,46 +174,50 @@ struct GoalSettingView: View {
         }.padding(.horizontal, 20)
     }
 
-    // 설정4: 외출시간
+    // 설정4: 외출시간 (평일/주말 섹션 아래 외출/귀가 시간)
     private var outingTimeContent: some View {
         VStack(spacing: 16) {
-            outingSection(title: "나가는 시간", keyPath: \.departure)
-            outingSection(title: "돌아오는 시간", keyPath: \.arrival)
+            ForEach(viewModel.outings) { outing in
+                outingSection(outing: outing)
+            }
         }
     }
 
-    private func outingSection(title: String, keyPath: WritableKeyPath<OutingTime, Date>) -> some View {
+    private func outingSection(outing: OutingTime) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
+            Text(outing.label)
                 .font(.F_Bodyoption)
                 .foregroundColor(Color("G400"))
 
-            ForEach(viewModel.outings) { outing in
-                HStack {
-                    Text(outing.label)
-                        .font(.F_Bodyoption)
-                        .foregroundColor(Color("BK"))
-                    Spacer()
-                    Button {
-                        timeEditing = TimeEditing(
-                            title: "\(outing.label) \(title)",
-                            initialTime: outing[keyPath: keyPath],
-                            onSave: { viewModel.updateOutingTime(id: outing.id, keyPath: keyPath, time: $0) }
-                        )
-                    } label: {
-                        Text(viewModel.timeText(outing[keyPath: keyPath]))
-                            .font(.F_Bodyoption)
-                            .foregroundColor(Color("BK"))
-                            .frame(width: 303, height: 68)
-                            .background(Color("W"))
-                            .cornerRadius(34)
-                    }
-
-                }
-            }
-            .padding(.bottom, 5)
+            outingRow(outing: outing, title: "외출", keyPath: \.departure)
+            outingRow(outing: outing, title: "귀가", keyPath: \.arrival)
         }
         .padding(20)
+    }
+
+    private func outingRow(outing: OutingTime, title: String, keyPath: WritableKeyPath<OutingTime, Date>) -> some View {
+        HStack {
+            Text(title)
+                .font(.F_Bodyoption)
+                .foregroundColor(Color("BK"))
+            Spacer()
+            Button {
+                timeEditing = TimeEditing(
+                    title: "\(outing.label) \(title) 시간",
+                    initialTime: outing[keyPath: keyPath],
+                    onSave: { viewModel.updateOutingTime(id: outing.id, keyPath: keyPath, time: $0) }
+                )
+            } label: {
+                Text(viewModel.timeText(outing[keyPath: keyPath]))
+                    .font(.F_Bodyoption)
+                    .foregroundColor(Color("BK"))
+                    .frame(width: 303, height: 68)
+                    .background(Color("W"))
+                    .cornerRadius(34)
+            }
+
+        }
+        .padding(.bottom, 5)
     }
 }
 
@@ -280,8 +286,8 @@ private struct KoreanTimeWheelPicker: View {
     var body: some View {
         HStack(spacing: 8) {
             WheelColumn(items: Self.periods, selection: periodBinding) { $0 }
-            WheelColumn(items: Self.hours, selection: hourBinding) { "\($0)" }
-            WheelColumn(items: Self.minutes, selection: minuteBinding) { String(format: "%02d", $0) }
+            WheelColumn(items: Self.hours, selection: hourBinding, loops: true) { "\($0)" }
+            WheelColumn(items: Self.minutes, selection: minuteBinding, loops: true) { String(format: "%02d", $0) }
         }
     }
 
@@ -328,33 +334,40 @@ private struct KoreanTimeWheelPicker: View {
 }
 
 // 한 열짜리 스냅 휠. 가운데로 스냅된 항목에 분홍 캡슐 하이라이트를 그린다.
+// loops가 true면 항목을 여러 블록 반복 배치하고, 스크롤이 멈출 때마다 가운데 블록의
+// 같은 항목으로 소리 없이 복귀시켜 무한 스크롤처럼 동작한다.
 private struct WheelColumn<Item: Hashable>: View {
     let items: [Item]
     @Binding var selection: Item
+    var loops: Bool = false
     let label: (Item) -> String
 
-    @State private var scrolledItem: Item?
+    @State private var scrolledIndex: Int?
 
     private let rowWidth: CGFloat = 80
     private let rowHeight: CGFloat = 48
     private let rowSpacing: CGFloat = 4
     private let visibleRows = 5
 
+    // 반복 블록 수 (홀수로 두고 가운데 블록에서 시작)
+    private var repetitions: Int { loops ? 101 : 1 }
+    private var centerBase: Int { items.count * (repetitions / 2) }
+
     var body: some View {
         ScrollView(.vertical) {
             LazyVStack(spacing: rowSpacing) {
-                ForEach(items, id: \.self) { item in
-                    Text(label(item))
+                ForEach(0..<(items.count * repetitions), id: \.self) { index in
+                    Text(label(items[index % items.count]))
                         .font(.F_Navigation)
-                        .foregroundColor(color(for: item))
+                        .foregroundColor(color(for: index))
                         .frame(width: rowWidth, height: rowHeight)
                         .background {
-                            if item == scrolledItem {
+                            if index == scrolledIndex {
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(Color("P050"))
                             }
                         }
-                        .id(item)
+                        .id(index)
                 }
             }
             .scrollTargetLayout()
@@ -363,23 +376,32 @@ private struct WheelColumn<Item: Hashable>: View {
                height: rowHeight * CGFloat(visibleRows) + rowSpacing * CGFloat(visibleRows - 1))
         .contentMargins(.vertical, (rowHeight + rowSpacing) * CGFloat(visibleRows / 2), for: .scrollContent)
         .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $scrolledItem, anchor: .center)
+        .scrollPosition(id: $scrolledIndex, anchor: .center)
         .scrollIndicators(.hidden)
-        .onAppear { scrolledItem = selection }
-        .onChange(of: scrolledItem) { _, newValue in
-            if let newValue, newValue != selection { selection = newValue }
+        .onAppear {
+            scrolledIndex = centerBase + (items.firstIndex(of: selection) ?? 0)
+        }
+        .onChange(of: scrolledIndex) { _, newValue in
+            guard let newValue else { return }
+            let item = items[newValue % items.count]
+            if item != selection { selection = item }
         }
         .onChange(of: selection) { _, newValue in
-            if scrolledItem != newValue { scrolledItem = newValue }
+            guard let current = scrolledIndex, items[current % items.count] != newValue else { return }
+            scrolledIndex = (current / items.count) * items.count + (items.firstIndex(of: newValue) ?? 0)
+        }
+        .onScrollPhaseChange { _, newPhase in
+            // 멈추면 가운데 블록으로 복귀 (같은 항목 위치라 화면상 변화 없음)
+            guard loops, newPhase == .idle, let current = scrolledIndex else { return }
+            let centered = centerBase + (current % items.count)
+            if centered != current { scrolledIndex = centered }
         }
     }
 
     // 가운데 칸 P400, 위아래 한 칸 G200, 그 밖은 G100
-    private func color(for item: Item) -> Color {
-        guard let scrolledItem,
-              let index = items.firstIndex(of: item),
-              let centerIndex = items.firstIndex(of: scrolledItem) else { return Color("G100") }
-        switch abs(index - centerIndex) {
+    private func color(for index: Int) -> Color {
+        guard let scrolledIndex else { return Color("G100") }
+        switch abs(index - scrolledIndex) {
         case 0: return Color("P400")
         case 1: return Color("G200")
         default: return Color("G100")
@@ -389,4 +411,8 @@ private struct WheelColumn<Item: Hashable>: View {
 
 #Preview {
     GoalSettingView(onClose: {})
+}
+
+#Preview("설정 3") {
+    GoalSettingView(onClose: {}, startStep: 3)
 }

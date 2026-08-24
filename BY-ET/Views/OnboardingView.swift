@@ -31,7 +31,7 @@ struct OnboardingView: View {
                     .foregroundColor(Color("BK"))
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 12)
-                TextField("닉네임을 설정해주세요", text: $nickname)
+                TextField("닉네임을 설정해주세요.", text: $nickname)
                     .font(.F_Bodybtn)
                     .foregroundColor(Color("BK"))
                     .multilineTextAlignment(.leading)

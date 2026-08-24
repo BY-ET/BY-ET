@@ -93,6 +93,20 @@ final class GoalSettingViewModel: ObservableObject {
         ))
     }
 
+    /// 목표 설정 완료 시 저장할 프로필 스냅샷 생성 (유형 + 목표 + 기간 + 시간)
+    func makeProfile(catType: CatType) -> HabitUserProfile {
+        // "2주 뒤" / "4주 뒤 (한 달)" / "6주 뒤" → 2/4/6
+        let weeks = Int(selectedPeriod?.prefix(1) ?? "4") ?? 4
+        return HabitUserProfile(
+            catTypeRaw: catType.rawValue,
+            goalRaw: TargetGoal.from(option: selectedHabit ?? "").rawValue,
+            totalWeeks: weeks,
+            startDate: Calendar.current.startOfDay(for: .now),
+            meals: meals.map(MealTimeSnapshot.init),
+            outings: outings.map(OutingTimeSnapshot.init)
+        )
+    }
+
     /// "오전 9시", "오후 12시 30분" 형태로 변환
     func timeText(_ date: Date) -> String {
         let components = Calendar.current.dateComponents([.hour, .minute], from: date)
