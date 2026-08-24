@@ -174,46 +174,50 @@ struct GoalSettingView: View {
         }.padding(.horizontal, 20)
     }
 
-    // 설정4: 외출시간
+    // 설정4: 외출시간 (평일/주말 섹션 아래 외출/귀가 시간)
     private var outingTimeContent: some View {
         VStack(spacing: 16) {
-            outingSection(title: "나가는 시간", keyPath: \.departure)
-            outingSection(title: "돌아오는 시간", keyPath: \.arrival)
+            ForEach(viewModel.outings) { outing in
+                outingSection(outing: outing)
+            }
         }
     }
 
-    private func outingSection(title: String, keyPath: WritableKeyPath<OutingTime, Date>) -> some View {
+    private func outingSection(outing: OutingTime) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
+            Text(outing.label)
                 .font(.F_Bodyoption)
                 .foregroundColor(Color("G400"))
 
-            ForEach(viewModel.outings) { outing in
-                HStack {
-                    Text(outing.label)
-                        .font(.F_Bodyoption)
-                        .foregroundColor(Color("BK"))
-                    Spacer()
-                    Button {
-                        timeEditing = TimeEditing(
-                            title: "\(outing.label) \(title)",
-                            initialTime: outing[keyPath: keyPath],
-                            onSave: { viewModel.updateOutingTime(id: outing.id, keyPath: keyPath, time: $0) }
-                        )
-                    } label: {
-                        Text(viewModel.timeText(outing[keyPath: keyPath]))
-                            .font(.F_Bodyoption)
-                            .foregroundColor(Color("BK"))
-                            .frame(width: 303, height: 68)
-                            .background(Color("W"))
-                            .cornerRadius(34)
-                    }
-
-                }
-            }
-            .padding(.bottom, 5)
+            outingRow(outing: outing, title: "외출", keyPath: \.departure)
+            outingRow(outing: outing, title: "귀가", keyPath: \.arrival)
         }
         .padding(20)
+    }
+
+    private func outingRow(outing: OutingTime, title: String, keyPath: WritableKeyPath<OutingTime, Date>) -> some View {
+        HStack {
+            Text(title)
+                .font(.F_Bodyoption)
+                .foregroundColor(Color("BK"))
+            Spacer()
+            Button {
+                timeEditing = TimeEditing(
+                    title: "\(outing.label) \(title) 시간",
+                    initialTime: outing[keyPath: keyPath],
+                    onSave: { viewModel.updateOutingTime(id: outing.id, keyPath: keyPath, time: $0) }
+                )
+            } label: {
+                Text(viewModel.timeText(outing[keyPath: keyPath]))
+                    .font(.F_Bodyoption)
+                    .foregroundColor(Color("BK"))
+                    .frame(width: 303, height: 68)
+                    .background(Color("W"))
+                    .cornerRadius(34)
+            }
+
+        }
+        .padding(.bottom, 5)
     }
 }
 

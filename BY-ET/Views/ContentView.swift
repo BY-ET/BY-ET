@@ -14,7 +14,7 @@ extension CatType: Identifiable {
 struct ContentView: View {
     // ⚠️ 임시 확인용: true면 앱 실행 시 유형 선택 → 목표설정 → 습관카드만 바로 확인할 수 있음
     // 확인이 끝나면 false로 되돌리면 원래 플로우(온보딩 → 테스트 → 홈)로 복구됨
-    private let showGoalAndRutineOnly = false
+    private let showGoalAndRutineOnly = true
     // isPresented 방식은 유형 선택과 같은 프레임에 열리면 이전 유형이 전달될 수 있어 item 방식 사용
     @State private var goalSettingType: CatType?
     @State private var showRutine = false
