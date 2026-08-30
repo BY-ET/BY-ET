@@ -170,7 +170,7 @@ struct HabitCardView: View {
 
     var body: some View {
         ZStack {
-            // 앞면: 습관 이미지 - TODO: 습관 이미지 에셋 추가 후 교체
+            // 앞면: 습관 이미지
             cardFront
                 .opacity(isFlipped ? 1 : 0)
                 .rotation3DEffect(.degrees(isFlipped ? 0 : 180), axis: (x: 0, y: 1, z: 0))
@@ -280,4 +280,13 @@ struct HabitCardView: View {
 
 #Preview {
     RutineView()
+}
+
+#Preview("카드 앞면") {
+    HabitCardView(
+        habit: HabitRepository.todaysHabits()[0],
+        isFlipped: .constant(true),
+        isCompleted: .constant(false)
+    )
+    .frame(width: 300, height: 490)
 }
