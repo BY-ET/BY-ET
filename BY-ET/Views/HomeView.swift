@@ -207,7 +207,7 @@ struct HomeView: View {
     // 모든 저장 데이터를 지워 온보딩(닉네임 설정)부터 다시 시작
     // hasCompletedSetup이 false가 되면 ContentView가 온보딩 화면으로 전환한다
     private func resetAllData() {
-        let keys = [
+        let keys: [String] = [
             "nickname", "hasCompletedSetup", "hasGoal", "catTypeRaw",
             "starCount", "weeklyProgress", "weeklyCompletedCount",
             "dailyCompletedCounts", "weeklyProgressWeekID",
@@ -266,8 +266,7 @@ struct HomeView: View {
         }
         .padding(.top, 8)
     }
-
-    // 요일별 달성 아이콘: 완료 개수에 따라 아이콘 표시 (1개: 1/3, 2개: 2/3, 3개: 꽉 찬 원)
+    
     @ViewBuilder
     private func dayCircle(count: Int) -> some View {
         Group {

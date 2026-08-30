@@ -13,13 +13,15 @@ struct HabitUserProfile: Codable {
     var catType: CatType { CatType(rawValue: catTypeRaw) ?? .type4 }
     var goal: TargetGoal { TargetGoal(rawValue: goalRaw) ?? .overeating }
 
-    // 시작일 기준 현재 주차 (1부터, 목표 기간을 넘으면 마지막 주차로 고정)
+    // 시작일이 속한 주(일요일 시작)를 1주차로, 일요일 0시마다 주차가 올라감
+    // (주간 달성률과 같은 기준, 목표 기간을 넘으면 마지막 주차로 고정)
     func week(on date: Date = .now) -> Int {
-        let calendar = Calendar.current
-        let days = calendar.dateComponents([.day],
-                                           from: calendar.startOfDay(for: startDate),
-                                           to: calendar.startOfDay(for: date)).day ?? 0
-        return min(max(days / 7 + 1, 1), totalWeeks)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.firstWeekday = 1
+        let startWeek = calendar.dateInterval(of: .weekOfYear, for: startDate)?.start ?? startDate
+        let currentWeek = calendar.dateInterval(of: .weekOfYear, for: date)?.start ?? date
+        let weeks = calendar.dateComponents([.weekOfYear], from: startWeek, to: currentWeek).weekOfYear ?? 0
+        return min(max(weeks + 1, 1), totalWeeks)
     }
 
     // 프로필이 없을 때(기존 사용자, 프리뷰) 저장된 유형만으로 만드는 기본 프로필
