@@ -102,6 +102,11 @@ struct RutineView: View {
         }
         flipped = HabitProgressStore.parseFlags(flippedRaw)
         completed = HabitProgressStore.parseFlags(completedRaw)
+
+        // 오늘의 습관 알림 스케줄 (완료한 습관과 "먹지 않음" 끼니의 알림은 제외)
+        NotificationScheduler.requestAuthorization()
+        let completedCodes = Set(zip(habits, completed).filter(\.1).map(\.0.code))
+        NotificationScheduler.scheduleToday(codes: habits.map(\.code), completedCodes: completedCodes)
     }
 
     // MARK: - 습관 아이콘 (현재 카드에 따라 색상 변경)
@@ -204,6 +209,10 @@ struct HabitCardView: View {
                 .foregroundColor(Color("BK"))
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
+                // 문구가 긴 습관(D24 등)도 잘리지 않게 2줄 고정 + 넘치면 폰트 자동 축소
+                .lineLimit(2)
+                .minimumScaleFactor(0.6)
+                .padding(.horizontal, 12)
                 .padding(.top, 16)
 
             habitImage
@@ -245,6 +254,8 @@ struct HabitCardView: View {
             updateWeeklyProgress()
             // completion_logs에 완료 기록 (주차 전환 시 난이도 재계산의 근거)
             HabitStore.log(code: habit.code, dateID: HabitProgressStore.todayID(), status: .completed)
+            // 달성했으니 오늘 남은 알림 취소 (식사 연동 습관의 끼니별 반복 알림 중단)
+            NotificationScheduler.cancelNotifications(code: habit.code)
         }
         .disabled(isCompleted)
     }
@@ -285,6 +296,22 @@ struct HabitCardView: View {
 #Preview("카드 앞면") {
     HabitCardView(
         habit: HabitRepository.todaysHabits()[0],
+        isFlipped: .constant(true),
+        isCompleted: .constant(false)
+    )
+    .frame(width: 300, height: 490)
+}
+
+// 문구가 가장 긴 습관(D24)으로 잘림 여부 확인용
+#Preview("카드 앞면 (긴 문구)") {
+    let record = HabitDatabase.habit(code: "D24")!
+    HabitCardView(
+        habit: Habit(id: 0,
+                     code: record.code,
+                     title: record.category.title,
+                     iconName: record.category.iconName,
+                     text: record.text,
+                     imageName: record.imageName),
         isFlipped: .constant(true),
         isCompleted: .constant(false)
     )
