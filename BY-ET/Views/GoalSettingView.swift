@@ -264,7 +264,6 @@ private struct TimeWheelSheet: View {
         .presentationBackground(Color("W"))
     }
 
-    // "오전 9시", "오후 1시 30분" 형태로 표시
     private var selectedTimeText: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -274,43 +273,26 @@ private struct TimeWheelSheet: View {
     }
 }
 
-// MARK: - 커스텀 시간 휠 피커 (오전/오후 · 시 · 분)
+// MARK: - 커스텀 시간 휠 피커 (시 · 분)
 
 private struct KoreanTimeWheelPicker: View {
     @Binding var time: Date
 
-    private static let periods = ["오전", "오후"]
-    private static let hours = Array(1...12)
+    private static let hours = Array(0...23)
     private static let minutes = Array(stride(from: 0, through: 55, by: 5))
 
     var body: some View {
         HStack(spacing: 8) {
-            WheelColumn(items: Self.periods, selection: periodBinding) { $0 }
             WheelColumn(items: Self.hours, selection: hourBinding, loops: true) { "\($0)" }
             WheelColumn(items: Self.minutes, selection: minuteBinding, loops: true) { String(format: "%02d", $0) }
         }
     }
 
-    private var periodBinding: Binding<String> {
-        Binding {
-            Calendar.current.component(.hour, from: time) < 12 ? "오전" : "오후"
-        } set: { newValue in
-            let hour = Calendar.current.component(.hour, from: time)
-            if newValue == "오전", hour >= 12 {
-                setHour(hour - 12)
-            } else if newValue == "오후", hour < 12 {
-                setHour(hour + 12)
-            }
-        }
-    }
-
     private var hourBinding: Binding<Int> {
         Binding {
-            let hour12 = Calendar.current.component(.hour, from: time) % 12
-            return hour12 == 0 ? 12 : hour12
+            Calendar.current.component(.hour, from: time)
         } set: { newValue in
-            let isPM = Calendar.current.component(.hour, from: time) >= 12
-            setHour((newValue % 12) + (isPM ? 12 : 0))
+            setHour(newValue)
         }
     }
 
