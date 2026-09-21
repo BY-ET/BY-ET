@@ -83,7 +83,7 @@ struct HomeView: View {
                         .padding(.bottom,14)
                 }
                 progressSection
-                resetButton
+//                resetButton
                     .padding(.top, 20)
             }
             .padding(.horizontal, 20)
