@@ -233,12 +233,10 @@ struct HabitCardView: View {
                 .padding(.top, 16)
 
             Text(habit.text)
-                .font(.F_Headline)
+                .font(.F_Bodyoption)
                 .foregroundColor(Color("BK"))
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
-                // 문구가 긴 습관(D24 등)도 잘리지 않게 2줄 고정 + 넘치면 폰트 자동 축소
-                .lineLimit(2)
                 .minimumScaleFactor(0.6)
                 .padding(.horizontal, 12)
                 .padding(.top, 16)
