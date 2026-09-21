@@ -71,9 +71,9 @@ struct HabitRecord {
     let notification: NotificationRule  // 알림 트리거 카테고리 (5종)
     let eventContingent: Bool   // 이벤트(회식·음주 등) 전제 여부. true면 오늘의 습관으로 선택되지 않는다.
 
-    // 카드 이미지 번호 (D03 → 3, rutine_eat_3)
+    // 카드 이미지 (Assets의 rutine_1 폴더, D03 → "type=D, number=3")
     var imageNumber: Int { Int(code.dropFirst()) ?? 1 }
-    var imageName: String { "rutine_\(category.rawValue)_\(imageNumber)" }
+    var imageName: String { "type=\(code.prefix(1)), number=\(imageNumber)" }
 
     // "먹지 않음" 처리: 식사 연동 습관은 먹는 끼니가 하나라도 있어야 오늘의 후보가 된다
     // (예: 저녁에만 걸린 습관은 저녁을 건너뛰는 사용자에게 배정되지 않음)
