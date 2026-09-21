@@ -107,13 +107,10 @@ final class GoalSettingViewModel: ObservableObject {
         )
     }
 
-    /// "오전 9시", "오후 12시 30분" 형태로 변환
     func timeText(_ date: Date) -> String {
         let components = Calendar.current.dateComponents([.hour, .minute], from: date)
         let hour = components.hour ?? 0
         let minute = components.minute ?? 0
-        let prefix = hour < 12 ? "오전" : "오후"
-        let hour12 = hour % 12 == 0 ? 12 : hour % 12
-        return minute == 0 ? "\(prefix) \(hour12)시" : "\(prefix) \(hour12)시 \(minute)분"
+        return minute == 0 ? "\(hour)시" : "\(hour)시 \(minute)분"
     }
 }

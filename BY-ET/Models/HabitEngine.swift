@@ -108,6 +108,8 @@ enum HabitEngine {
                     && habit.difficulty <= cap
                     && context(habit.context)
                     && (!avoidRecent || !recentCodes.contains(habit.code))
+                    // "먹지 않음" 체크된 끼니에만 걸린 습관은 그날 후보에서 제외
+                    && habit.isAvailable(meals: profile.meals)
             }
         }
 
@@ -138,9 +140,14 @@ enum HabitEngine {
         }
 
         // 티어 8 안전망: context=무관 최저 난이도 (D02, E01, X05 등이 항상 존재)
-        let safety = pool.filter { $0.context == .any }
+        let safety = pool.filter { $0.context == .any && $0.isAvailable(meals: profile.meals) }
             .sorted { ($0.difficulty, $0.code) < ($1.difficulty, $1.code) }
-        return choose(from: safety, history: history) ?? pool[0]
+        if let chosen = choose(from: safety, history: history) {
+            return chosen
+        }
+        // 모든 끼니를 건너뛰는 극단적인 경우에도 빈손이 되지 않도록 끼니 조건 없이 재시도
+        let lastResort = pool.sorted { ($0.difficulty, $0.code) < ($1.difficulty, $1.code) }
+        return choose(from: lastResort, history: history) ?? pool[0]
     }
 
     // 같은 티어 안에서의 결정적 선택: 배정된 지 가장 오래된 습관 우선, 동률이면 코드 오름차순
@@ -193,11 +200,19 @@ enum HabitEngine {
         return Double(completed) / Double(assigned.count)
     }
 
-    // MARK: - 트리거 개인화
+    // MARK: - 알림 시각 계산 (트리거 기준표 시트)
 
-    // 습관의 트리거 유형과 프로필의 식사/외출 시간으로 알림 시각 계산 (푸시 알림 스케줄링용)
-    // nil이면 특정 시각이 없는 상시 습관
-    static func triggerDate(for habit: HabitRecord, profile: HabitUserProfile, on date: Date = .now) -> Date? {
+    // 식사전/외출전/귀가: 기준 시각 30분 전
+    static let reminderLeadMinutes = -30
+    // 상시고정: 14시 (외출~귀가 사이)
+    static let fixedDailyHour = 14
+    // 저녁: 저녁 20시
+    static let eveningHour = 20
+
+    // 습관의 알림 트리거(NotificationRule)와 프로필의 끼니/외출 시간으로 그날의 알림 시각들을 계산한다.
+    // 식사 연동 습관은 먹는 끼니마다 1개씩 반환 (달성할 때까지 끼니 시간대에 계속 알림),
+    // "먹지 않음" 체크된 끼니의 알림은 생략된다. 그 외 규칙은 최대 1개.
+    static func notificationDates(for habit: HabitRecord, profile: HabitUserProfile, on date: Date = .now) -> [Date] {
         let calendar = Calendar.current
 
         func at(hour: Int, minute: Int, offsetMinutes: Int = 0) -> Date? {
@@ -205,35 +220,26 @@ enum HabitEngine {
             return calendar.date(byAdding: .minute, value: offsetMinutes, to: base)
         }
 
-        // 건너뛰지 않는 첫 식사 시간
-        let firstMeal = profile.meals.first { !$0.isSkipped }
-        // 요일에 맞는 외출 시간 (평일/주말)
+        // 요일에 맞는 외출/귀가 시간 (평일/주말)
         let isWeekend = calendar.isDateInWeekend(date)
         let outing = profile.outings.first { isWeekend ? $0.label == "주말" : $0.label == "평일" } ?? profile.outings.first
 
-        switch habit.trigger {
-        case "식사시간 연동":
-            guard let meal = firstMeal else { return nil }
-            // D06은 식사 10분 전, 그 외(D01)는 30분 전
-            return at(hour: meal.hour, minute: meal.minute, offsetMinutes: habit.code == "D06" ? -10 : -30)
-        case "식사준비":
-            guard let meal = firstMeal else { return nil }
-            return at(hour: meal.hour, minute: meal.minute, offsetMinutes: -10)
-        case "식사시작", "식사중":
-            guard let meal = firstMeal else { return nil }
-            return at(hour: meal.hour, minute: meal.minute)
-        case "식사직후":
-            guard let meal = firstMeal else { return nil }
-            return at(hour: meal.hour, minute: meal.minute, offsetMinutes: 30)
-        case "출퇴근", "이동중":
-            guard let outing else { return nil }
-            return at(hour: outing.departureHour, minute: outing.departureMinute)
-        case "저녁시간":
-            return at(hour: 22, minute: 0)
-        case "취침전":
-            return at(hour: 22, minute: 30)
-        default:
-            return nil
+        switch habit.notification {
+        case .meal(let slots):
+            return slots.compactMap { slot in
+                guard let meal = profile.meals.first(where: { $0.name == slot.rawValue && !$0.isSkipped }) else { return nil }
+                return at(hour: meal.hour, minute: meal.minute, offsetMinutes: reminderLeadMinutes)
+            }
+        case .beforeOuting:
+            guard let outing else { return [] }
+            return [at(hour: outing.departureHour, minute: outing.departureMinute, offsetMinutes: reminderLeadMinutes)].compactMap { $0 }
+        case .beforeArrival:
+            guard let outing else { return [] }
+            return [at(hour: outing.arrivalHour, minute: outing.arrivalMinute, offsetMinutes: reminderLeadMinutes)].compactMap { $0 }
+        case .fixedDaily:
+            return [at(hour: fixedDailyHour, minute: 0)].compactMap { $0 }
+        case .evening:
+            return [at(hour: eveningHour, minute: 0)].compactMap { $0 }
         }
     }
 }

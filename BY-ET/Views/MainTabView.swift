@@ -12,13 +12,14 @@ struct MainTabView: View {
 
     @State private var selectedTab: MainTab = .home
     @State private var showGoalAlert = false
+    @State private var showMyCatAlert = false
     @State private var isGoalSetting = false
     @AppStorage("hasGoal") private var hasGoal: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
-                RutineView()
+                RutineView(isTabActive: selectedTab == .rutine)
                     .opacity(selectedTab == .rutine ? 1 : 0)
                     .allowsHitTesting(selectedTab == .rutine)
                 HomeView()
@@ -33,6 +34,9 @@ struct MainTabView: View {
             tabBar
         }
         .background(Color("P050"))
+        .alert("마이캣은 준비중입니다!", isPresented: $showMyCatAlert) {
+            Button("확인") {}
+        }
         .alert("목표를 설정해주세요!", isPresented: $showGoalAlert) {
             Button("닫기", role: .cancel) {}
             Button("목표 설정하기") { isGoalSetting = true }
@@ -73,6 +77,8 @@ struct MainTabView: View {
         Button {
             if tab == .rutine && !hasGoal {
                 showGoalAlert = true
+            } else if tab == .myCat {
+                showMyCatAlert = true
             } else {
                 selectedTab = tab
             }

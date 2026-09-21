@@ -68,7 +68,7 @@ struct CatTypeContent {
 struct CatTypeRepository {
     static let contents: [CatType: CatTypeContent] = [
         .type1: CatTypeContent(
-            imageName: "type1",
+            imageName: "type1_에너지",
             circleImageName: "c_type1_에너지",
             quote: "\"당신은 건강하게 먹고, 땀 흘려 운동하며, 주변의 지지까지 받는, 말 그대로 '축복받은' 다이어터입니다.\"",
             sections: [
@@ -77,7 +77,7 @@ struct CatTypeRepository {
             ]
         ),
         .type2: CatTypeContent(
-            imageName: "type2",
+            imageName: "type2_존재감",
             circleImageName: "c_type2_존재감",
             quote: "\"운동도 1등, 회식 자리도 1등! 사람이 좋아 거절 못 하는 당신은 이 구역의 진정한 마당발입니다.\"",
             sections: [
@@ -86,7 +86,7 @@ struct CatTypeRepository {
             ]
         ),
         .type3: CatTypeContent(
-            imageName: "type3",
+            imageName: "type3_자기관리",
             circleImageName: "c_type3_자기관리",
             quote: "\"아침 스트레칭, 영양 잡힌 식단, 규칙적인 운동. 남들에겐 도전이지만 당신에겐 '숨 쉬듯 자연스러운 일상'입니다.\"",
             sections: [
@@ -95,7 +95,7 @@ struct CatTypeRepository {
             ]
         ),
         .type4: CatTypeContent(
-            imageName: "type4",
+            imageName: "type4_묵묵하게",
             circleImageName: "c_type4_묵묵하게",
             quote: "\"폭풍우가 몰아쳐도 나는 나만의 속도로 달린다. 시끄러운 세상 속, 묵묵히 땀 흘리는 고독한 러너.\"",
             sections: [
@@ -104,7 +104,7 @@ struct CatTypeRepository {
             ]
         ),
         .type5: CatTypeContent(
-            imageName: "type5",
+            imageName: "type5_안락한",
             circleImageName: "c_type5_안락한",
             quote: "\"최고급 장비와 식단은 이미 준비됐다. 하지만... 누워있는 게 제일 좋은 걸 어떡해?\"",
             sections: [
@@ -113,7 +113,7 @@ struct CatTypeRepository {
             ]
         ),
         .type6: CatTypeContent(
-            imageName: "type6",
+            imageName: "type6_태어난김",
             circleImageName: "c_type6_태어난김",
             quote: "\"스트레스 받아 죽겠는데 다이어트는 무슨! 인생 뭐 있어? 오늘 먹고 죽자!\"",
             sections: [
@@ -122,7 +122,7 @@ struct CatTypeRepository {
             ]
         ),
         .type7: CatTypeContent(
-            imageName: "type7",
+            imageName: "type7_숨만",
             circleImageName: "c_type7_숨만",
             quote: "\"이불 밖은 위험해, 그리고 귀찮아. 평화로운 내 공간에서 숨만 쉬어도 이렇게 행복한데 굳이?\"",
             sections: [
@@ -131,7 +131,7 @@ struct CatTypeRepository {
             ]
         ),
         .type8: CatTypeContent(
-            imageName: "type8",
+            imageName: "type8_매일이",
             circleImageName: "c_type8_매일이",
             quote: "\"효율이 생명이다. 불필요한 움직임은 사치일 뿐. 저는 현재 '초절전 생존 모드'로 작동 중입니다.\"",
             sections: [
