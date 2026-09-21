@@ -44,10 +44,12 @@ enum NotificationScheduler {
         "\(identifierPrefix)|\(code)|\(index)"
     }
 
+    // 모든 알림에 공통으로 쓰는 문구
+    private static let reminderMessage = "습관 체크 잊지 않으셨죠?"
+
     private static func request(for habit: HabitRecord, fireDate: Date, index: Int) -> UNNotificationRequest {
         let content = UNMutableNotificationContent()
-        content.title = "오늘의 \(habit.category.title) 습관"
-        content.body = habit.text.replacingOccurrences(of: "\n", with: " ")
+        content.body = reminderMessage
         content.sound = .default
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
