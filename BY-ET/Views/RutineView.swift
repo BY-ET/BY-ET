@@ -53,6 +53,9 @@ struct RutineView: View {
         }
         .onChange(of: flipped) {
             flippedRaw = HabitProgressStore.encodeFlags(flipped)
+            if flipped.allSatisfy({ $0 }) {
+                NotificationScheduler.cancelDailyReminder()
+            }
         }
         .onChange(of: completed) {
             completedRaw = HabitProgressStore.encodeFlags(completed)
@@ -107,6 +110,10 @@ struct RutineView: View {
         NotificationScheduler.requestAuthorization()
         let completedCodes = Set(zip(habits, completed).filter(\.1).map(\.0.code))
         NotificationScheduler.scheduleToday(codes: habits.map(\.code), completedCodes: completedCodes)
+        // 매일 오전 9시 알림: 카드를 아직 다 열지 않았으면 등록, 다 열었으면 등록하지 않음
+        if !flipped.allSatisfy({ $0 }) {
+            NotificationScheduler.scheduleDailyReminder()
+        }
     }
 
     // MARK: - 습관 아이콘 (현재 카드에 따라 색상 변경)

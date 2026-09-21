@@ -7,12 +7,34 @@ import UserNotifications
 //   ("달성할 때까지 기록한 시간대에 계속 알림")
 enum NotificationScheduler {
     private static let identifierPrefix = "habit"
+    private static let dailyReminderID = "dailyCardReminder"
     // 습관 1개가 가질 수 있는 최대 알림 수 (식사 연동: 아침/점심/저녁)
     private static let maxNotificationsPerHabit = MealSlot.allCases.count
 
     // 알림 권한 요청 (이미 응답한 경우 시스템이 다시 묻지 않음)
     static func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+    }
+
+    // 매일 오전 9시 알림 등록 (이미 등록된 경우 중복 등록 방지)
+    static func scheduleDailyReminder() {
+        let center = UNUserNotificationCenter.current()
+        center.getPendingNotificationRequests { pending in
+            guard !pending.contains(where: { $0.identifier == dailyReminderID }) else { return }
+            let content = UNMutableNotificationContent()
+            content.body = "오늘의 습관 카드를 확인하세요!"
+            content.sound = .default
+            var components = DateComponents()
+            components.hour = 9
+            components.minute = 0
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+            center.add(UNNotificationRequest(identifier: dailyReminderID, content: content, trigger: trigger))
+        }
+    }
+
+    // 오늘 카드 3개를 모두 오픈했을 때 당일 알림 취소
+    static func cancelDailyReminder() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [dailyReminderID])
     }
 
     // 오늘의 습관 알림을 다시 스케줄 (기존 습관 알림을 모두 제거한 뒤 등록)
