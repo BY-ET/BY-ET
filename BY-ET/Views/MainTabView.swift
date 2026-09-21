@@ -19,7 +19,7 @@ struct MainTabView: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
-                RutineView()
+                RutineView(isTabActive: selectedTab == .rutine)
                     .opacity(selectedTab == .rutine ? 1 : 0)
                     .allowsHitTesting(selectedTab == .rutine)
                 HomeView()

@@ -4,6 +4,8 @@ import Lottie
 struct RutineView: View {
     @Environment(\.scenePhase) private var scenePhase
 
+    var isTabActive: Bool = true
+
     // 오늘의 습관 카드 3개 (운동/식욕/환경, 매일 새로 선택)
     @State private var habits: [Habit] = HabitRepository.todaysHabits()
 
@@ -19,6 +21,9 @@ struct RutineView: View {
     @AppStorage("dailyCardStateDate") private var cardStateDate: String = ""
     @AppStorage("dailyFlipped") private var flippedRaw: String = "0,0,0"
     @AppStorage("dailyCompleted") private var completedRaw: String = "0,0,0"
+
+    @AppStorage("hasSeenRutineOnboarding") private var hasSeenRutineOnboarding: Bool = false
+    @State private var showOnboarding = false
 
     private static let cardWidth: CGFloat = 300
     private static let cardHeight: CGFloat = 490
@@ -51,6 +56,11 @@ struct RutineView: View {
         .onChange(of: scenePhase) {
             if scenePhase == .active { refreshForToday() }
         }
+        .onChange(of: isTabActive) { _, isActive in
+            if isActive && !hasSeenRutineOnboarding {
+                showOnboarding = true
+            }
+        }
         .onChange(of: flipped) {
             flippedRaw = HabitProgressStore.encodeFlags(flipped)
             if flipped.allSatisfy({ $0 }) {
@@ -60,6 +70,17 @@ struct RutineView: View {
         .onChange(of: completed) {
             completedRaw = HabitProgressStore.encodeFlags(completed)
             celebrateIfAllCompleted()
+        }
+        .overlay {
+            if showOnboarding {
+                RutineOnboardingView {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showOnboarding = false
+                    }
+                    hasSeenRutineOnboarding = true
+                }
+                .transition(.opacity)
+            }
         }
         .overlay {
             if showConfetti {
