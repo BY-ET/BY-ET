@@ -2,6 +2,8 @@ import SwiftUI
 
 struct RutineOnboardingView: View {
     @State private var step: Int = 0
+    @State private var dragOffset: CGFloat = 0
+    @State private var swipeForward: Bool = true
     var onFinish: () -> Void
 
     private let sampleHabit: Habit = HabitRepository.todaysHabits()[0]
@@ -26,32 +28,43 @@ struct RutineOnboardingView: View {
                 Spacer()
                 progressDots
 
-
-                if step == 3 {
-                    Text(instructionTexts[step])
-                        .font(.F_Bodyoption)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 110)
-                    step4ProgressCard
-                        .padding(.horizontal, 52.5)
-                        .padding(.vertical, 40)
-
-                    Text("이번 주 습관 달성률 100%를 목표로\n힘차게 시작해 볼까요?")
-                        .font(.F_Bodyoption)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 52.5)
-                        .padding(.bottom, 110)
-                } else {
-                    Text(instructionTexts[step])
-                        .font(.F_Bodyoption)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding(.vertical, 20)
-                    stepCard
-                        .padding(.bottom, 20)
+                Group {
+                    if step == 3 {
+                        VStack(spacing: 0) {
+                            Text(instructionTexts[step])
+                                .font(.F_Bodyoption)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 110)
+                            step4ProgressCard
+                                .padding(.horizontal, 52.5)
+                                .padding(.vertical, 40)
+                            Text("이번 주 습관 달성률 100%를 목표로\n힘차게 시작해 볼까요?")
+                                .font(.F_Bodyoption)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 52.5)
+                                .padding(.bottom, 110)
+                        }
+                    } else {
+                        VStack(spacing: 0) {
+                            Text(instructionTexts[step])
+                                .font(.F_Bodyoption)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 20)
+                            stepCard
+                                .padding(.bottom, 20)
+                        }
+                    }
                 }
+                .id(step)
+                .transition(.asymmetric(
+                    insertion: .move(edge: swipeForward ? .trailing : .leading),
+                    removal: .move(edge: swipeForward ? .leading : .trailing)
+                ))
+                .offset(x: dragOffset)
+
                 if step == 3 {
                     AppButton(
                         title: "오늘의 습관 카드 확인하기",
@@ -72,12 +85,36 @@ struct RutineOnboardingView: View {
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture {
-            guard step < 3 else { return }
-            withAnimation(.easeInOut(duration: 0.25)) {
-                step += 1
-            }
-        }
+        .gesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    let canGoNext = step < 3
+                    let canGoPrev = step > 0
+                    if (value.translation.width < 0 && canGoNext) ||
+                       (value.translation.width > 0 && canGoPrev) {
+                        dragOffset = value.translation.width * 0.6
+                    }
+                }
+                .onEnded { value in
+                    if value.translation.width < -80 && step < 3 {
+                        swipeForward = true
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            step += 1
+                            dragOffset = 0
+                        }
+                    } else if value.translation.width > 80 && step > 0 {
+                        swipeForward = false
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            step -= 1
+                            dragOffset = 0
+                        }
+                    } else {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
     }
 
     // MARK: - Progress Dots
