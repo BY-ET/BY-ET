@@ -84,24 +84,15 @@ struct RutineView: View {
         }
         .overlay {
             if showConfetti {
-                // 고양이 위로 컨페티가 터지도록 겹쳐서 화면 가로 꽉 차게 중앙 배치
-                ZStack {
-                    LottieView(animation: .named("goal_cat"))
-                        .playing(loopMode: .playOnce)
-                        .resizable()
-                        .aspectRatio(3.0 / 2.0, contentMode: .fit)
-
-                    LottieView(animation: .named("confetti"))
-                        .playing(loopMode: .playOnce)
-                        .resizable()
-                        // 컨페티(3초)가 더 길어서 끝나는 시점에 둘 다 사라짐
-                        .animationDidFinish { _ in
-                            showConfetti = false
-                        }
-                        .aspectRatio(1, contentMode: .fit)
-                }
-                .frame(maxWidth: .infinity)
-                .allowsHitTesting(false)
+                LottieView(animation: .named("goal_cat_v2"))
+                    .playing(loopMode: .playOnce)
+                    .resizable()
+                    .animationDidFinish { _ in
+                        showConfetti = false
+                    }
+                    .aspectRatio(3.0 / 2.0, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(false)
             }
         }
     }
