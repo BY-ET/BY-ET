@@ -224,9 +224,10 @@ struct HabitCardView: View {
                             .frame(width: 120)
                     }
                 }
-
-            completeButton
-                .padding(.top,12)
+            if !isCompleted{
+                completeButton
+                    .padding(.top,12)
+            }
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -243,8 +244,8 @@ struct HabitCardView: View {
 
     private var completeButton: some View {
         AppButton(
-            title: isCompleted ? "완료!" : "완료했나요?",
-            style: isCompleted ? .pink : .pinkOutline,
+            title: "완료했나요?",
+            style: .pink,
             size: .medium
         ) {
             withAnimation(.spring(duration: 0.4)) {
