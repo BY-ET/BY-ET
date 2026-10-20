@@ -71,7 +71,7 @@ struct GoalSettingView: View {
             VStack(spacing: 0){
                 Spacer()
                 // 다음 버튼
-                AppButton(title: viewModel.isLastStep ? "완료" : "다음",
+                AppButton(title: viewModel.isLastStep ? "완료" : (viewModel.step == 3 ? "확인" : "다음"),
                           style: viewModel.isNextEnabled ? .pink : .graysoft,
                           size: .large) {
                     if viewModel.isLastStep {
