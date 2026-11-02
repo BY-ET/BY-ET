@@ -35,14 +35,27 @@ struct MainTabView: View {
             tabBar
         }
         .background(Color("P050"))
-        .alert("마이캣은 준비중입니다!", isPresented: $showMyCatAlert) {
-            Button("확인") {}
+        .overlay {
+            if showMyCatAlert {
+                CustomAlertOverlay(
+                    title: "마이캣은 준비중입니다!",
+                    message: "조금만 기다려 주세요. 곧 만날 수 있어요.",
+                    primaryLabel: "확인",
+                    primaryAction: { showMyCatAlert = false }
+                )
+            }
         }
-        .alert("목표를 설정해주세요!", isPresented: $showGoalAlert) {
-            Button("닫기", role: .cancel) {}
-            Button("목표 설정하기") { isGoalSetting = true }
-        } message: {
-            Text("목표를 설정해야 오늘의 습관 카드를 확인할 수 있어요.")
+        .overlay {
+            if showGoalAlert {
+                CustomAlertOverlay(
+                    title: "목표를 설정해주세요!",
+                    message: "목표를 설정해야 오늘의 습관 카드(🔥)를 확인할 수 있어요.",
+                    primaryLabel: "목표 설정하기",
+                    primaryAction: { showGoalAlert = false; isGoalSetting = true },
+                    secondaryLabel: "다음에 하기",
+                    secondaryAction: { showGoalAlert = false }
+                )
+            }
         }
         .fullScreenCover(isPresented: $isGoalSetting) {
             GoalSettingView(
