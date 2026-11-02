@@ -48,84 +48,95 @@ struct MyCatView: View {
             .padding(.bottom, 20)
 
             // 별 & 재료 진행률
-            HStack(alignment: .top, spacing: 12) {
-                HStack(spacing: 8) {
-                    Image("ic_star")
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 40, height: 40)
-                        .foregroundStyle(Color("P400"))
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("내가 모은 별")
-                            .font(.F_footnotemedium)
-                            .foregroundStyle(Color("G400"))
-                        Text("\(totalStars)개")
-                            .font(.F_Title)
+            VStack(spacing: 12){
+                HStack(alignment: .top, spacing: 0) {
+                    HStack(spacing: 8) {
+                        Image("ic_star")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
                             .foregroundStyle(Color("P400"))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("내가 모은 별")
+                                .font(.F_footnotemedium)
+                                .foregroundStyle(Color("G400"))
+                            Text("\(totalStars)개")
+                                .font(.F_Title)
+                                .foregroundStyle(Color("P400"))
+                        }
                     }
-                }
-                .padding(.vertical,9.5)
-                .padding(.leading,12)
-                .padding(.trailing,16)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color("W"))
-                )
-                // 재료 진행률
-               
-                VStack(alignment: .center, spacing: 6) {
-                    HStack(spacing: 2) {
-                        Text("남은 체력")
-                            .font(.F_caption)
-                            .foregroundStyle(Color("BK"))
-                        Button{
-                            
-                        } label: {
-                            Image("ic_?")
-                        }
-                        Spacer()
-                        Text("\(Int(materialProgress * 100))%")
-                            .font(.F_Title)
-                            .foregroundStyle(Color("P400"))
-                    }.frame(width: 170)
+                    .padding(.vertical,9.5)
+                    .padding(.leading,12)
+                    .padding(.trailing,16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color("W"))
+                    )
+                    Spacer()
+                    // 재료 진행률
+                    VStack(alignment: .center, spacing: 6) {
+                        HStack(spacing: 2) {
+                            Text("남은 체력")
+                                .font(.F_caption)
+                                .foregroundStyle(Color("BK"))
+                            Button{
+                                
+                            } label: {
+                                Image("ic_?")
+                            }
+                            Spacer()
+                            Text("\(Int(materialProgress * 100))%")
+                                .font(.F_Title)
+                                .foregroundStyle(Color("P400"))
+                        }.frame(width: 170)
 
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color("P050"))
-                                .frame(width: 166, height: 12)
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color("P400"))
-                                .frame(width: 30, height: 12)
-                        }
-                    }.frame(width: 166, height: 12)
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color("P050"))
+                                    .frame(width: 166, height: 12)
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color("P400"))
+                                    .frame(width: 30, height: 12)
+                            }
+                        }.frame(width: 166, height: 12)
+                    }
+                    .frame(width: 194, height: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color("W"))
+                    )
                 }
-                .frame(width: 194, height: 56)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color("W"))
-                )
+                HStack{
+                    AppButton(
+                        title: "상점",
+                        icon: "ic_shop",
+                        iconSize: 34,
+                        style: .pink,
+                        size: .medium)
+                    {
+
+                    }
+                    Spacer()
+                }
             }
-
+            .padding(.horizontal, 20)
             Spacer()
 
-            // 고양이 캐릭터
             Image(myCatImageName)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 220, height: 220)
+                .frame(width: 280, height: 280)
 
             Spacer()
 
-            // 보관함 버튼
             AppButton(
                 title: "마이캣 보관함 가기",
                 style: .pink,
                 size: .large
             ) {
-            }
+            }.padding(20)
         }
         .background {
             Image("MC_background")

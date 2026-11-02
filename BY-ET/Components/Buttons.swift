@@ -23,6 +23,7 @@ struct AppButton: View {
 
     let title: String
     var icon: String? = nil
+    var iconSize: CGFloat? = nil
     let style: Style
     let size: Size
     let action: () -> Void
@@ -35,7 +36,7 @@ struct AppButton: View {
                         .renderingMode(.template)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: iconSize, height: iconSize)
+                        .frame(width: resolvedIconSize, height: resolvedIconSize)
                 }
                 Text(title)
                     .font(titleFont)
@@ -85,8 +86,8 @@ struct AppButton: View {
         }
     }
 
-    private var iconSize: CGFloat {
-        size == .large ? 24 : 20
+    private var resolvedIconSize: CGFloat {
+        iconSize ?? (size == .large ? 24 : 20)
     }
 
     private var titleFont: Font {
