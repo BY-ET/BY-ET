@@ -35,7 +35,7 @@ struct GoalSettingView: View {
                                 withAnimation { viewModel.goToPreviousStep() }
                             }
                         } label: {
-                            Image("ic_arrow_left")
+                            Image(viewModel.isFirstStep ? "ic_close" : "ic_arrow_left")
                                 .renderingMode(.template)
                                 .foregroundColor(Color("G500"))
                         }
