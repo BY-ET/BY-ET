@@ -12,7 +12,6 @@ struct MainTabView: View {
 
     @State private var selectedTab: MainTab = .home
     @State private var showGoalAlert = false
-    @State private var showMyCatAlert = false
     @State private var isGoalSetting = false
     @AppStorage("hasGoal") private var hasGoal: Bool = false
     @AppStorage("shouldOpenRutineTab") private var shouldOpenRutineTab: Bool = false
@@ -35,16 +34,6 @@ struct MainTabView: View {
             tabBar
         }
         .background(Color("P050"))
-        .overlay {
-            if showMyCatAlert {
-                CustomAlertOverlay(
-                    title: "마이캣은 준비중입니다!",
-                    message: "조금만 기다려 주세요. 곧 만날 수 있어요.",
-                    primaryLabel: "확인",
-                    primaryAction: { showMyCatAlert = false }
-                )
-            }
-        }
         .overlay {
             if showGoalAlert {
                 CustomAlertOverlay(
@@ -103,8 +92,6 @@ struct MainTabView: View {
         Button {
             if tab == .rutine && !hasGoal {
                 showGoalAlert = true
-            } else if tab == .myCat {
-                showMyCatAlert = true
             } else {
                 selectedTab = tab
             }
