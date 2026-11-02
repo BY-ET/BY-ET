@@ -3,8 +3,23 @@ import SwiftUI
 struct OnboardingView: View {
     let onStart: () -> Void
 
-    @State private var nickname: String = ""
+    @State private var nickname: String
     @AppStorage("nickname") private var savedNickname: String = ""
+    @FocusState private var isNicknameFocused: Bool
+    @State private var isSuggested: Bool
+    @State private var suppressSuggestionReset: Bool = false
+
+    init(onStart: @escaping () -> Void) {
+        self.onStart = onStart
+        let saved = UserDefaults.standard.string(forKey: "nickname") ?? ""
+        if saved.isEmpty {
+            _nickname = State(initialValue: NicknameGenerator.random())
+            _isSuggested = State(initialValue: true)
+        } else {
+            _nickname = State(initialValue: saved)
+            _isSuggested = State(initialValue: false)
+        }
+    }
 
     private var isNicknameValid: Bool {
         !nickname.trimmingCharacters(in: .whitespaces).isEmpty
@@ -31,14 +46,7 @@ struct OnboardingView: View {
                     .foregroundColor(Color("BK"))
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 12)
-                TextField("닉네임을 설정해주세요.", text: $nickname)
-                    .font(.F_Bodybtn)
-                    .foregroundColor(Color("BK"))
-                    .multilineTextAlignment(.leading)
-                    .padding(.horizontal, 20)
-                    .frame(width: 350, height: 56)
-                    .background(Color.white)
-                    .cornerRadius(28)
+                nicknameField
                     .padding(.bottom, 140)
                 AppButton(title: "테스트 시작하기",
                           style: isNicknameValid ? .pink : .gray,
@@ -53,10 +61,43 @@ struct OnboardingView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
         }
-        .ignoresSafeArea(.keyboard)
-        .onAppear {
-            nickname = savedNickname
+        .onTapGesture {
+            isNicknameFocused = false
         }
+        .ignoresSafeArea(.keyboard)
+    }
+
+    private var nicknameField: some View {
+        TextField("닉네임을 설정해주세요.", text: $nickname)
+            .focused($isNicknameFocused)
+            .font(.F_Bodybtn)
+            .foregroundColor(isSuggested ? Color("G200") : Color("BK"))
+            .multilineTextAlignment(.leading)
+            .padding(.leading, 20)
+            .padding(.trailing, 52)
+            .frame(width: 350, height: 56)
+            .background(Color.white)
+            .cornerRadius(28)
+            .overlay(alignment: .trailing) {
+                Button {
+                    suppressSuggestionReset = true
+                    nickname = NicknameGenerator.random()
+                    isSuggested = true
+                } label: {
+                    Image(systemName: "arrow.trianglehead.2.counterclockwise.rotate.90")
+                        .font(.system(size: 18))
+                        .foregroundColor(Color("G200"))
+                        .frame(width: 44, height: 44)
+                }
+                .padding(.trailing, 4)
+            }
+            .onChange(of: nickname) { _, _ in
+                if suppressSuggestionReset {
+                    suppressSuggestionReset = false
+                } else {
+                    isSuggested = false
+                }
+            }
     }
 }
 

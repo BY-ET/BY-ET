@@ -15,6 +15,7 @@ struct MainTabView: View {
     @State private var showMyCatAlert = false
     @State private var isGoalSetting = false
     @AppStorage("hasGoal") private var hasGoal: Bool = false
+    @AppStorage("shouldOpenRutineTab") private var shouldOpenRutineTab: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -52,6 +53,18 @@ struct MainTabView: View {
                     isGoalSetting = false
                 }
             )
+        }
+        .onAppear {
+            if shouldOpenRutineTab && hasGoal {
+                selectedTab = .rutine
+                shouldOpenRutineTab = false
+            }
+        }
+        .onChange(of: shouldOpenRutineTab) { _, newValue in
+            if newValue && hasGoal {
+                selectedTab = .rutine
+                shouldOpenRutineTab = false
+            }
         }
     }
 

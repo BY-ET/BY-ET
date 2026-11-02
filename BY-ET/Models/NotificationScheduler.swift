@@ -39,6 +39,7 @@ enum NotificationScheduler {
 
     // 오늘의 습관 알림을 다시 스케줄 (기존 습관 알림을 모두 제거한 뒤 등록)
     // completedCodes에 있는 습관과 이미 지난 시각의 알림은 걸지 않는다
+    // 같은 분(minute)에 여러 알림이 겹치면 첫 번째 것만 등록한다
     static func scheduleToday(codes: [String], completedCodes: Set<String> = [], on date: Date = .now) {
         let center = UNUserNotificationCenter.current()
         center.getPendingNotificationRequests { pending in
@@ -46,14 +47,23 @@ enum NotificationScheduler {
             center.removePendingNotificationRequests(withIdentifiers: habitIDs)
 
             let profile = HabitStore.profile ?? .fallback()
+            var scheduledMinutes = Set<String>()
+
             for code in codes where !completedCodes.contains(code) {
                 guard let habit = HabitDatabase.habit(code: code) else { continue }
                 let dates = HabitEngine.notificationDates(for: habit, profile: profile, on: date)
                 for (index, fireDate) in dates.enumerated() where fireDate > Date.now {
+                    let key = minuteKey(for: fireDate)
+                    guard scheduledMinutes.insert(key).inserted else { continue }
                     center.add(request(for: habit, fireDate: fireDate, index: index))
                 }
             }
         }
+    }
+
+    private static func minuteKey(for date: Date) -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        return "\(c.year ?? 0)-\(c.month ?? 0)-\(c.day ?? 0)-\(c.hour ?? 0)-\(c.minute ?? 0)"
     }
 
     // 습관 완료 시 남은 알림 취소 (식사 연동 습관의 반복 알림 중단)

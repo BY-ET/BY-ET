@@ -83,7 +83,6 @@ struct HomeView: View {
                         .padding(.bottom,14)
                 }
                 progressSection
-//                resetButton
                     .padding(.top, 20)
             }
             .padding(.horizontal, 20)
@@ -111,12 +110,21 @@ struct HomeView: View {
             Text("\(weekNumber)주차 목표")
                 .font(.F_Bodymedium)
                 .foregroundColor(Color("BK"))
-            
+
             Text(weeklyGoalMessage)
                 .font(.F_Title)
                 .foregroundColor(Color("P400"))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 16)
+
+            if weekNumber == 1 {
+                Text("아래의 🔥아이콘을 눌러서 오늘의 습관카드를 수행해보자!")
+                    .font(.F_footnotemedium)
+                    .foregroundColor(Color("G500"))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
@@ -191,35 +199,6 @@ struct HomeView: View {
             .cornerRadius(20)
         }
     }
-
-    // MARK: - ⚠️ 임시 테스트용 전체 초기화 버튼
-
-    private var resetButton: some View {
-        Button {
-            resetAllData()
-        } label: {
-            Text("전체 초기화 (닉네임부터 다시)")
-                .font(.F_footnotemedium)
-                .foregroundColor(Color("G400"))
-        }
-    }
-
-    // 모든 저장 데이터를 지워 온보딩(닉네임 설정)부터 다시 시작
-    // hasCompletedSetup이 false가 되면 ContentView가 온보딩 화면으로 전환한다
-    private func resetAllData() {
-        let keys: [String] = [
-            "nickname", "hasCompletedSetup", "hasGoal", "catTypeRaw",
-            "starCount", "weeklyProgress", "weeklyCompletedCount",
-            "dailyCompletedCounts", "weeklyProgressWeekID",
-            "dailyCardStateDate", "dailyFlipped", "dailyCompleted",
-            "habitUserProfile", "habitDailyAssignments", "habitCompletionLogs",
-            "confettiShownDate", "hasSeenRutineOnboarding"
-        ]
-        for key in keys {
-            UserDefaults.standard.removeObject(forKey: key)
-        }
-    }
-
     // MARK: - 이번 주 습관 달성률
 
     private var progressSection: some View {
