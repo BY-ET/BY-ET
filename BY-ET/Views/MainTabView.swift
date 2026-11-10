@@ -12,7 +12,6 @@ struct MainTabView: View {
 
     @State private var selectedTab: MainTab = .home
     @State private var showGoalAlert = false
-    @State private var showMyCatAlert = false
     @State private var isGoalSetting = false
     @AppStorage("hasGoal") private var hasGoal: Bool = false
     @AppStorage("shouldOpenRutineTab") private var shouldOpenRutineTab: Bool = false
@@ -35,14 +34,17 @@ struct MainTabView: View {
             tabBar
         }
         .background(Color("P050"))
-        .alert("마이캣은 준비중입니다!", isPresented: $showMyCatAlert) {
-            Button("확인") {}
-        }
-        .alert("목표를 설정해주세요!", isPresented: $showGoalAlert) {
-            Button("닫기", role: .cancel) {}
-            Button("목표 설정하기") { isGoalSetting = true }
-        } message: {
-            Text("목표를 설정해야 오늘의 습관 카드를 확인할 수 있어요.")
+        .overlay {
+            if showGoalAlert {
+                CustomAlertOverlay(
+                    title: "목표를 설정해주세요!",
+                    message: "목표를 설정해야 오늘의 습관 카드(🔥)를 확인할 수 있어요.",
+                    primaryLabel: "목표 설정하기",
+                    primaryAction: { showGoalAlert = false; isGoalSetting = true },
+                    secondaryLabel: "다음에 하기",
+                    secondaryAction: { showGoalAlert = false }
+                )
+            }
         }
         .fullScreenCover(isPresented: $isGoalSetting) {
             GoalSettingView(
@@ -90,8 +92,6 @@ struct MainTabView: View {
         Button {
             if tab == .rutine && !hasGoal {
                 showGoalAlert = true
-            } else if tab == .myCat {
-                showMyCatAlert = true
             } else {
                 selectedTab = tab
             }
